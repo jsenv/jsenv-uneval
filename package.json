@@ -1,7 +1,7 @@
 {
 	"name": "@jsenv/uneval",
 	"description": "Convert value into evaluable string",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
@@ -27,9 +27,10 @@
 		"prettier-check": "node ./script/prettier-check/prettier-check.js",
 		"generate-coverage": "node ./script/generate-coverage/generate-coverage.js",
 		"upload-coverage": "node ./script/upload-coverage/upload-coverage.js",
+		"generate-global-bundle": "node ./script/generate-global-bundle/generate-global-bundle.js",
 		"generate-commonjs-bundle": "node ./script/generate-commonjs-bundle/generate-commonjs-bundle.js",
 		"generate-import-map": "node ./script/generate-import-map/generate-import-map.js",
-		"dist": "npm run clean && npm run generate-commonjs-bundle",
+		"dist": "npm run clean && npm run generate-global-bundle && npm run generate-commonjs-bundle",
 		"clean": "rimraf dist && rimraf coverage",
 		"reinstall": "npm run clean && rimraf node_modules && npm install",
 		"postinstall": "npm run generate-import-map",
