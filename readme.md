@@ -19,7 +19,7 @@ Convert value into evaluable string.
 
 jsenv/jsenv-uneval github repository publishes `@jsenv/uneval` package on github and npm package registries.
 
-`@jsenv/uneval` is a function turning a JavaScript value into a string that can be evaluated. It exists to overcome `JSON.stringify` limitations but prefer `JSON.stringify` over `uneval` when you can.<br />
+`@jsenv/uneval` turns a JavaScript value into a string that can be evaluated. It exists to overcome `JSON.stringify` limitations but prefer `JSON.stringify` over `uneval` when you can.<br />
 
 ## JSON.stringify limits
 
