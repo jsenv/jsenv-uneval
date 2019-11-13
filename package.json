@@ -1,0 +1,59 @@
+{
+	"name": "@jsenv/uneval",
+	"description": "Convert value into evaluable string",
+	"version": "1.0.0",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/jsenv/jsenv-uneval"
+	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://npm.pkg.github.com"
+	},
+	"engines": {
+		"node": ">=12.0.0"
+	},
+	"main": "dist/commonjs/main.js",
+	"module": "index.js",
+	"files": [
+		"/dist/",
+		"/src/",
+		"/index.js"
+	],
+	"scripts": {
+		"test": "node ./script/test/test.js",
+		"eslint-check": "eslint .",
+		"prettier-check": "node ./script/prettier-check/prettier-check.js",
+		"generate-coverage": "node ./script/generate-coverage/generate-coverage.js",
+		"upload-coverage": "node ./script/upload-coverage/upload-coverage.js",
+		"generate-commonjs-bundle": "node ./script/generate-commonjs-bundle/generate-commonjs-bundle.js",
+		"generate-import-map": "node ./script/generate-import-map/generate-import-map.js",
+		"dist": "npm run clean && npm run generate-commonjs-bundle",
+		"clean": "rimraf dist && rimraf coverage",
+		"reinstall": "npm run clean && rimraf node_modules && npm install",
+		"postinstall": "npm run generate-import-map",
+		"prepublishOnly": "node ./script/transform-package/remove-postinstall.js && npm run dist",
+		"postpublish": "node ./script/transform-package/restore-postinstall.js"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"@dmail/assert": "3.14.0",
+		"@jsenv/auto-publish": "2.0.0",
+		"@jsenv/bundling": "8.1.0",
+		"@jsenv/codecov-upload": "2.0.0",
+		"@jsenv/eslint-config": "11.3.0",
+		"@jsenv/execution": "6.11.0",
+		"@jsenv/node-launcher": "4.26.0",
+		"@jsenv/node-module-import-map": "8.4.1",
+		"@jsenv/node-signals": "1.0.0",
+		"@jsenv/prettier-check-project": "3.5.0",
+		"@jsenv/prettier-config": "1.0.1",
+		"@jsenv/testing": "3.9.0",
+		"eslint": "6.6.0",
+		"node-fetch": "2.6.0",
+		"node-forge": "0.9.1",
+		"prettier": "1.19.1",
+		"rimraf": "3.0.0"
+	}
+}
