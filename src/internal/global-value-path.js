@@ -1,4 +1,4 @@
-import { isComposite } from "./is-composite.js"
+import { isComposite } from "./isComposite.js"
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap
 const compositeWellKnownMap = new WeakMap()
