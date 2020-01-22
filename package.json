@@ -1,7 +1,7 @@
 {
 	"name": "@jsenv/uneval",
-	"description": "Convert value into evaluable string",
-	"version": "1.1.0",
+	"version": "1.2.0",
+	"description": "Convert value into evaluable string.",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
@@ -14,8 +14,10 @@
 	"engines": {
 		"node": ">=12.0.0"
 	},
-	"main": "dist/commonjs/main.js",
+	"type": "module",
+	"exports": "./index.js",
 	"module": "index.js",
+	"main": "dist/commonjs/main.cjs",
 	"files": [
 		"/dist/",
 		"/src/",
