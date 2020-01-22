@@ -7,4 +7,3 @@ const config = createEslintConfig({
 })
 
 module.exports = config
-
