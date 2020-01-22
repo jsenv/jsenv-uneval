@@ -1,4 +1,4 @@
-/.dist/
+/.jsenv/
 /coverage/
 /node_modules/
 /importMap.json

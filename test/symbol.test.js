@@ -1,5 +1,5 @@
 /* eslint-disable no-eval */
-import { assert } from "@dmail/assert"
+import { assert } from "@jsenv/assert"
 import { uneval } from "../index.js"
 
 // unknown symbol
