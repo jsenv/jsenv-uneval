@@ -10,8 +10,12 @@ on:
 
 jobs:
   ci:
-    name: node 12 on ubuntu
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+      max-parallel: 1 # to ensure windows failure can prevent ubuntu from publishing package
+    runs-on: ${{ matrix.os }}
+    name: node 12 on ${{ matrix.os }}
     env:
       CI: true
     steps:
@@ -28,7 +32,7 @@ jobs:
       - name: code format
         run: npm run prettier-check
       - name: testing
-        run: npm run generate-coverage
+        run: npm run test-with-coverage
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -36,14 +40,14 @@ jobs:
         run: npm run upload-coverage
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      - name: auto publish
-        if: github.event_name == 'push'
-        run: node ./.github/auto-publish.js
+      - name: publish package
+        if: github.event_name == 'push' && runner.os == 'Linux' # runner check to run it once
+        run: node ./.github/publish-package.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: auto release on github
-        if: github.event_name == 'push'
-        run: node ./.github/auto-release-on-github.js
+      - name: ensure github release
+        if: github.event_name == 'push' && runner.os == 'Linux' # runner check to run it once
+        run: node ./.github/ensure-github-release-for-package.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

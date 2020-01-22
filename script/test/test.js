@@ -1,7 +1,29 @@
-const { test } = require("@jsenv/testing")
-const { projectPath, testDescription } = require("../../jsenv.config.js")
+const { executeTestPlan, launchChromiumTab, launchNode } = require("@jsenv/core")
+const jsenvConfig = require("../../jsenv.config.js")
 
-test({
-  projectPath,
-  executeDescription: testDescription,
+executeTestPlan({
+  ...jsenvConfig,
+  testPlan: {
+    "test/**/*.test.js": {
+      browser: {
+        launch: launchChromiumTab,
+      },
+      node: {
+        launch: launchNode,
+      },
+    },
+    "test/**/*.browser.test.js": {
+      browser: {
+        launch: launchChromiumTab,
+      },
+      node: null,
+    },
+    "test/**/*.node.test.js": {
+      browser: null,
+      node: {
+        launch: launchNode,
+      },
+    },
+  },
+  coverage: process.argv.includes("--coverage"),
 })

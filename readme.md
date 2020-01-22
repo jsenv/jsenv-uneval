@@ -1,13 +1,13 @@
-# Uneval
+# uneval
+
+Convert value into evaluable string.
 
 [![github package](https://img.shields.io/github/package-json/v/jsenv/jsenv-uneval.svg?logo=github&label=package)](https://github.com/jsenv/jsenv-uneval/packages)
 [![npm package](https://img.shields.io/npm/v/@jsenv/uneval.svg?logo=npm&label=package)](https://www.npmjs.com/package/@jsenv/uneval)
 [![github ci](https://github.com/jsenv/jsenv-uneval/workflows/ci/badge.svg)](https://github.com/jsenv/jsenv-uneval/actions?workflow=ci)
 [![codecov coverage](https://codecov.io/gh/jsenv/jsenv-uneval/branch/master/graph/badge.svg)](https://codecov.io/gh/jsenv/jsenv-uneval)
 
-Convert value into evaluable string.
-
-## Table of contents
+# Table of contents
 
 - [Presentation](#Presentation)
 - [JSON.stringify limits](#JSONstringify-limits)
@@ -15,11 +15,9 @@ Convert value into evaluable string.
 - [Node example](#Node-example)
 - [Installation](#Installation)
 
-## Presentation
+# Presentation
 
-jsenv/jsenv-uneval github repository publishes `@jsenv/uneval` package on github and npm package registries.
-
-`@jsenv/uneval` turns a JavaScript value into a string that can be evaluated. It exists to overcome `JSON.stringify` limitations but prefer `JSON.stringify` over `uneval` when you can.<br />
+`@jsenv/uneval` turns a JavaScript value into a string that can be evaluated. It exists to overcome `JSON.stringify` limitations but prefer `JSON.stringify` over `uneval` when you can.
 
 ## JSON.stringify limits
 
@@ -102,16 +100,8 @@ console.log(eval(uneval({ answer: 42 })))
 
 — see also https://jsenv.github.io/jsenv-uneval/node-example.
 
-## Installation
-
-If you have never installed a jsenv package, read [Installing a jsenv package](https://github.com/jsenv/jsenv-core/blob/master/docs/installing-jsenv-package.md#installing-a-jsenv-package) before going further.
-
-This documentation is up-to-date with a specific version so prefer any of the following commands
+# Installation
 
 ```console
-npm install @jsenv/uneval@1.1.0
-```
-
-```console
-yarn add @jsenv/uneval@1.1.0
+npm install @jsenv/uneval@1.2.0
 ```
