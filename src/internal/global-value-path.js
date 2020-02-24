@@ -25,6 +25,13 @@ const visitGlobalObject = (value) => {
           throw e
         }
 
+        if (!descriptor) {
+          // it's apparently possible to have getOwnPropertyNames returning
+          // a property that later returns a null descriptor
+          // for instance window.showModalDialog in webkit 13.0
+          return
+        }
+
         // do not trigger getter/setter
         if ("value" in descriptor) {
           const propertyValue = descriptor.value
