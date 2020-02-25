@@ -8,4 +8,5 @@ startExploring({
   explorableConfig: {
     ...jsenvExplorableConfig,
   },
+  livereloading: true,
 })
