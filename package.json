@@ -1,6 +1,6 @@
 {
 	"name": "@jsenv/uneval",
-	"version": "1.3.1",
+	"version": "1.4.0",
 	"description": "Convert value into evaluable string.",
 	"license": "MIT",
 	"repository": {
@@ -15,13 +15,12 @@
 		"node": ">=12.0.0"
 	},
 	"type": "module",
-  "exports": {
-    ".": {
-      "import": "./index.js",
-      "require": "./dist/commonjs/main.cjs"
-    }
-  },
-	"module": "index.js",
+	"exports": {
+		".": {
+			"import": "./index.js",
+			"require": "./dist/commonjs/main.cjs"
+		}
+	},
 	"main": "dist/commonjs/main.cjs",
 	"files": [
 		"/dist/",
@@ -41,9 +40,7 @@
 		"generate-global-bundle": "node ./script/generate-global-bundle/generate-global-bundle.js",
 		"generate-import-map": "node ./script/generate-import-map/generate-import-map.js",
 		"install-git-hooks": "node ./script/install-git-hooks/install-git-hooks.js",
-		"dist": "npm run clean && npm run generate-commonjs-bundle && npm run generate-global-bundle",
-		"clean": "rimraf dist && rimraf coverage",
-		"reinstall": "npm run clean && rimraf node_modules && npm install",
+		"dist": "npm run generate-commonjs-bundle && npm run generate-global-bundle",
 		"postinstall": "npm run generate-import-map && npm run install-git-hooks",
 		"prepublishOnly": "node ./script/transform-package/remove-postinstall.js && npm run dist",
 		"postpublish": "node ./script/transform-package/restore-postinstall.js",
@@ -51,19 +48,19 @@
 	},
 	"dependencies": {},
 	"devDependencies": {
-		"@jsenv/assert": "1.2.1",
-		"@jsenv/codecov-upload": "3.1.0",
-		"@jsenv/core": "10.6.0-alpha.0",
-		"@jsenv/eslint-config": "12.1.0",
-		"@jsenv/git-hooks": "1.2.0",
-		"@jsenv/github-release-package": "1.1.1",
-		"@jsenv/node-module-import-map": "10.0.1",
-		"@jsenv/package-publish": "1.3.1",
-		"@jsenv/prettier-check-project": "5.2.0",
-		"@jsenv/prettier-config": "1.1.0",
+		"@jsenv/assert": "2.0.1",
+		"@jsenv/codecov-upload": "3.3.0",
+		"@jsenv/core": "12.0.6",
+		"@jsenv/eslint-config": "12.3.1",
+		"@jsenv/git-hooks": "1.3.3",
+		"@jsenv/github-release-package": "1.2.1",
+		"@jsenv/node-module-import-map": "11.0.1",
+		"@jsenv/package-publish": "1.5.1",
+		"@jsenv/prettier-check-project": "5.5.0",
+		"@jsenv/prettier-config": "1.2.0",
 		"babel-eslint": "11.0.0-beta.0",
 		"eslint": "6.8.0",
-		"prettier": "1.19.1",
-		"rimraf": "3.0.0"
+		"playwright": "0.11.1",
+		"prettier": "1.19.1"
 	}
 }

@@ -4,4 +4,5 @@ const jsenvConfig = require("../../jsenv.config.js")
 generateGlobalBundle({
   ...jsenvConfig,
   globalName: "__jsenv_uneval__",
+  bundleDirectoryClean: true,
 })

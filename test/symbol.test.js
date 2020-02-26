@@ -8,16 +8,17 @@ import { uneval } from "../index.js"
   try {
     uneval(value)
     throw new Error("should throw")
-  } catch (actual) {
-    const expected = new Error(
-      `symbol must be global, like Symbol.iterator, or created using Symbol.for().
+  } catch (error) {
+    const actual = {
+      name: error.name,
+      message: error.message,
+    }
+    const expected = {
+      name: "Error",
+      message: `symbol must be global, like Symbol.iterator, or created using Symbol.for().
 symbol: Symbol()`,
-    )
-
-    assert({
-      actual,
-      expected,
-    })
+    }
+    assert({ actual, expected })
   }
 }
 

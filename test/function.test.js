@@ -7,8 +7,15 @@ import { uneval } from "../index.js"
   try {
     uneval(value)
     throw new Error("should throw")
-  } catch (actual) {
-    const expected = new Error("function are not allowed.")
+  } catch (error) {
+    const actual = {
+      name: error.name,
+      message: error.message,
+    }
+    const expected = {
+      name: "Error",
+      message: "function are not allowed.",
+    }
     assert({ actual, expected })
   }
 }
@@ -20,9 +27,16 @@ import { uneval } from "../index.js"
   try {
     uneval(value)
     throw new Error("should throw")
-  } catch (actual) {
-    const expected = new Error(`function are not allowed.
-function found at: foo[[descriptor:value]]`)
+  } catch (error) {
+    const actual = {
+      name: error.name,
+      message: error.message,
+    }
+    const expected = {
+      name: "Error",
+      message: `function are not allowed.
+function found at: foo[[descriptor:value]]`,
+    }
     assert({ actual, expected })
   }
 }

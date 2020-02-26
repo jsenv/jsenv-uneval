@@ -18,7 +18,7 @@ import { uneval } from "../index.js"
 
 {
   const value = new Error("hello")
-  Object.defineProperty(expected, "bar", {
+  Object.defineProperty(value, "bar", {
     enumerable: false,
     value: "bar",
   })
@@ -29,7 +29,7 @@ import { uneval } from "../index.js"
 
 {
   const value = new Error()
-  expected.name = "AssertionError"
+  value.name = "AssertionError"
   const actual = eval(uneval(value))
   const expected = value
   assert({ actual, expected })

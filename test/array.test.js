@@ -27,10 +27,7 @@ import { uneval } from "../index.js"
   const value = [Symbol.iterator]
   const actual = eval(uneval(value))
   const expected = value
-  assert({
-    actual,
-    expected,
-  })
+  assert({ actual, expected })
 }
 
 {
@@ -38,10 +35,7 @@ import { uneval } from "../index.js"
   const value = new Array("foo", 1)
   const actual = eval(uneval(value))
   const expected = value
-  assert({
-    actual,
-    expected,
-  })
+  assert({ actual, expected })
 }
 
 {
@@ -49,8 +43,5 @@ import { uneval } from "../index.js"
   value.push(value)
   const actual = eval(uneval(value))
   const expected = value
-  assert({
-    actual,
-    expected,
-  })
+  assert({ actual, expected })
 }

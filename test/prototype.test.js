@@ -8,17 +8,21 @@ import { uneval } from "../index.js"
   function FetchError(message) {
     Error.call(this, message)
     this.message = message
-    Error.captureStackTrace(this, this.constructor)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, this.constructor)
+    }
   }
 
   const value = new FetchError("coucou")
   const actual = eval(uneval(value))
   const expected = { message: "coucou" }
-  Object.defineProperty(expected, "stack", {
-    value: actual.stack,
-    configurable: true,
-    writable: true,
-  })
+  if (Error.captureStackTrace) {
+    Object.defineProperty(expected, "stack", {
+      value: actual.stack,
+      configurable: true,
+      writable: true,
+    })
+  }
   assert({ actual, expected })
 }
 
@@ -29,11 +33,16 @@ import { uneval } from "../index.js"
   try {
     uneval(value, { prototypeStrict: true })
     throw new Error("should throw")
-  } catch (actual) {
-    const expected = new Error(
-      `prototype must be global, like Object.prototype, or somewhere in the value.
+  } catch (error) {
+    const actual = {
+      name: error.name,
+      message: error.message,
+    }
+    const expected = {
+      name: "Error",
+      message: `prototype must be global, like Object.prototype, or somewhere in the value.
 prototype constructor name: Object`,
-    )
+    }
     assert({ actual, expected })
   }
 }
@@ -46,11 +55,16 @@ prototype constructor name: Object`,
   const value = new CustomConstructor()
   try {
     uneval(value, { prototypeStrict: true })
-  } catch (actual) {
-    const expected = new Error(
-      `prototype must be global, like Object.prototype, or somewhere in the value.
+  } catch (error) {
+    const actual = {
+      name: error.name,
+      message: error.message,
+    }
+    const expected = {
+      name: "Error",
+      message: `prototype must be global, like Object.prototype, or somewhere in the value.
 prototype constructor name: CustomConstructor`,
-    )
+    }
     assert({ actual, expected })
   }
 }

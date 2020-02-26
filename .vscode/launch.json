@@ -7,16 +7,44 @@
       "request": "launch",
       "protocol": "inspector",
       "program": "${file}",
-      "runtimeVersion": "13.6.0",
+      "runtimeArgs": ["--unhandled-rejections=strict"],
+      "autoAttachChildProcesses": true,
+      // "sourceMaps": false,
+      "smartStep": true,
+      "skipFiles": [
+        // force-array-multiline
+        // "node_modules/**",
+        "node_modules/@babel/template/**",
+        "node_modules/@dmail/cancellation/**",
+        "node_modules/playwright/**",
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "name": "node13",
+      "type": "node",
+      "request": "launch",
+      "protocol": "inspector",
+      "program": "${file}",
+      "runtimeVersion": "13.8.0",
+      "runtimeArgs": [
+        "--unhandled-rejections=strict",
+        "--experimental-json-modules",
+        // this is to disable experimental warning
+        "--no-warnings"
+      ],
+      // "args": ["--coverage"],
       "autoAttachChildProcesses": true,
       "sourceMaps": true,
       "smartStep": true,
       "skipFiles": [
         // force-array-multiline
-        "node_modules/@babel/**",
-        "node_modules/@jsenv/cancellation/**",
-        "node_modules/regenerator-trasform/**",
-        "<node_internals>/**/*.js"
+        // "node_modules/**",
+        "node_modules/@babel/template/**",
+        "node_modules/@dmail/cancellation/**",
+        "node_modules/@rollup/**",
+        "node_modules/playwright/**",
+        "<node_internals>/**"
       ]
     },
     {

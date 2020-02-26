@@ -1,29 +1,30 @@
-const { executeTestPlan, launchChromiumTab, launchNode } = require("@jsenv/core")
+const {
+  executeTestPlan,
+  launchChromiumTab,
+  launchFirefoxTab,
+  launchWebkitTab,
+  launchNode,
+} = require("@jsenv/core")
 const jsenvConfig = require("../../jsenv.config.js")
 
 executeTestPlan({
   ...jsenvConfig,
   testPlan: {
     "test/**/*.test.js": {
-      browser: {
+      chromium: {
         launch: launchChromiumTab,
       },
-      node: {
-        launch: launchNode,
+      firefox: {
+        launch: launchFirefoxTab,
       },
-    },
-    "test/**/*.browser.test.js": {
-      browser: {
-        launch: launchChromiumTab,
+      webkit: {
+        launch: launchWebkitTab,
       },
-      node: null,
-    },
-    "test/**/*.node.test.js": {
-      browser: null,
       node: {
         launch: launchNode,
       },
     },
   },
   coverage: process.argv.includes("--coverage"),
+  completedExecutionLogMerging: true,
 })
