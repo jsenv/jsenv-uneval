@@ -1,6 +1,6 @@
 {
 	"name": "@jsenv/uneval",
-	"version": "1.3.2",
+	"version": "1.4.0",
 	"description": "Convert value into evaluable string.",
 	"license": "MIT",
 	"repository": {
@@ -48,7 +48,7 @@
 	},
 	"dependencies": {},
 	"devDependencies": {
-		"@jsenv/assert": "2.0.0",
+		"@jsenv/assert": "2.0.1",
 		"@jsenv/codecov-upload": "3.3.0",
 		"@jsenv/core": "12.0.6",
 		"@jsenv/eslint-config": "12.3.1",
