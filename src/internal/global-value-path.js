@@ -11,7 +11,10 @@ export const getPrimitiveGlobalPath = (value) => primitiveWellKnownMap.get(value
 const visitGlobalObject = (value) => {
   const visitValue = (value, path) => {
     if (isComposite(value)) {
-      if (compositeWellKnownMap.has(value)) return // prevent infinite recursion
+      // prevent infinite recursion
+      if (compositeWellKnownMap.has(value)) {
+        return
+      }
       compositeWellKnownMap.set(value, path)
 
       const visitProperty = (property) => {
