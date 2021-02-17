@@ -40,8 +40,14 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
   }
 
   const primitiveRecipeToSetupSource = ({ value }) => {
-    if (typeof value === "string") return `"${escapeString(value)}";`
-    if (Object.is(value, -0)) return "-0;"
+    if (typeof value === "string") {
+      return `"${escapeString(value)}";`
+    }
+
+    if (Object.is(value, -0)) {
+      return "-0;"
+    }
+
     return `${String(value)};`
   }
 
@@ -55,16 +61,23 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
   }
 
   const compositeRecipeToSetupSource = ({ prototypeIdentifier, valueOfIdentifier }) => {
-    if (prototypeIdentifier === undefined) return identifierToVariableName(valueOfIdentifier)
+    if (prototypeIdentifier === undefined) {
+      return identifierToVariableName(valueOfIdentifier)
+    }
 
     const prototypeValue = valueMap[prototypeIdentifier]
-    if (prototypeValue === null) return `Object.create(null);`
+    if (prototypeValue === null) {
+      return `Object.create(null);`
+    }
 
     const prototypeConstructor = prototypeValue.constructor
-    if (prototypeConstructor === Object)
+    if (prototypeConstructor === Object) {
       return `Object.create(${identifierToVariableName(prototypeIdentifier)});`
+    }
 
-    if (valueOfIdentifier === undefined) return `new ${prototypeConstructor.name}();`
+    if (valueOfIdentifier === undefined) {
+      return `new ${prototypeConstructor.name}();`
+    }
 
     return `new ${prototypeConstructor.name}(${identifierToVariableName(valueOfIdentifier)});`
   }
@@ -76,8 +89,9 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
   })
 
   const recipeToMutateSource = (recipe, recipeVariableName) => {
-    if (recipe.type === "composite")
+    if (recipe.type === "composite") {
       return compositeRecipeToMutateSource(recipe, recipeVariableName)
+    }
     return ``
   }
 

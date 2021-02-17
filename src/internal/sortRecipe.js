@@ -6,12 +6,20 @@ export const sortRecipe = (recipeArray) => {
     let currentRecipe = recipe
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      if (currentRecipe.type !== "composite") break
+      if (currentRecipe.type !== "composite") {
+        break
+      }
+
       const prototypeIdentifier = currentRecipe.prototypeIdentifier
-      if (prototypeIdentifier === undefined) break
+      if (prototypeIdentifier === undefined) {
+        break
+      }
+
       currentRecipe = recipeArray[prototypeIdentifier]
 
-      if (callback(currentRecipe, prototypeIdentifier)) return prototypeIdentifier
+      if (callback(currentRecipe, prototypeIdentifier)) {
+        return prototypeIdentifier
+      }
     }
     return undefined
   }
@@ -27,27 +35,39 @@ export const sortRecipe = (recipeArray) => {
         (recipeCandidate) => recipeCandidate === rightRecipe,
       )
       // if left recipe requires right recipe, left must be after right
-      if (rightRecipeIsInLeftRecipePrototypeChain) return 1
+      if (rightRecipeIsInLeftRecipePrototypeChain) {
+        return 1
+      }
 
       const leftRecipeIsInRightRecipePrototypeChain = findInRecipePrototypeChain(
         rightRecipe,
         (recipeCandidate) => recipeCandidate === leftRecipe,
       )
       // if right recipe requires left recipe, right must be after left
-      if (leftRecipeIsInRightRecipePrototypeChain) return -1
+      if (leftRecipeIsInRightRecipePrototypeChain) {
+        return -1
+      }
     }
 
     if (leftType !== rightType) {
       // if left is a composite, left must be after right
-      if (leftType === "composite") return 1
+      if (leftType === "composite") {
+        return 1
+      }
+
       // if right is a composite, right must be after left
-      if (rightType === "composite") return -1
+      if (rightType === "composite") {
+        return -1
+      }
     }
 
     const leftIndex = recipeArray.indexOf(leftRecipe)
     const rightIndex = recipeArray.indexOf(rightRecipe)
     // left was before right, don't change that
-    if (leftIndex < rightIndex) return -1
+    if (leftIndex < rightIndex) {
+      return -1
+    }
+
     // right was after left, don't change that
     return 1
   })

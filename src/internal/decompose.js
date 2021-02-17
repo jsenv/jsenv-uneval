@@ -13,23 +13,31 @@ export const decompose = (mainValue, { functionAllowed, prototypeStrict }) => {
   const valueToIdentifier = (value, path = []) => {
     if (!isComposite(value)) {
       const existingIdentifier = identifierForPrimitive(value)
-      if (existingIdentifier !== undefined) return existingIdentifier
+      if (existingIdentifier !== undefined) {
+        return existingIdentifier
+      }
       const identifier = identifierForNewValue(value)
       recipeArray[identifier] = primitiveToRecipe(value)
       return identifier
     }
 
-    if (typeof Promise === "function" && value instanceof Promise)
+    if (typeof Promise === "function" && value instanceof Promise) {
       throw new Error(createPromiseAreNotSupportedMessage({ path }))
-    if (typeof WeakSet === "function" && value instanceof WeakSet)
+    }
+    if (typeof WeakSet === "function" && value instanceof WeakSet) {
       throw new Error(createWeakSetAreNotSupportedMessage({ path }))
-    if (typeof WeakMap === "function" && value instanceof WeakMap)
+    }
+    if (typeof WeakMap === "function" && value instanceof WeakMap) {
       throw new Error(createWeakMapAreNotSupportedMessage({ path }))
-    if (typeof value === "function" && !functionAllowed)
+    }
+    if (typeof value === "function" && !functionAllowed) {
       throw new Error(createForbiddenFunctionMessage({ path }))
+    }
 
     const existingIdentifier = identifierForComposite(value)
-    if (existingIdentifier !== undefined) return existingIdentifier
+    if (existingIdentifier !== undefined) {
+      return existingIdentifier
+    }
     const identifier = identifierForNewValue(value)
 
     const compositeGlobalPath = getCompositeGlobalPath(value)
@@ -68,10 +76,12 @@ export const decompose = (mainValue, { functionAllowed, prototypeStrict }) => {
   }
 
   const computePropertyDescription = (propertyDescriptor, propertyNameOrSymbol, path) => {
-    if (propertyDescriptor.set && !functionAllowed)
+    if (propertyDescriptor.set && !functionAllowed) {
       throw new Error(createForbiddenPropertySetterMessage({ path, propertyNameOrSymbol }))
-    if (propertyDescriptor.get && !functionAllowed)
+    }
+    if (propertyDescriptor.get && !functionAllowed) {
       throw new Error(createForbiddenPropertyGetterMessage({ path, propertyNameOrSymbol }))
+    }
 
     return {
       configurable: propertyDescriptor.configurable,
@@ -175,11 +185,15 @@ export const decompose = (mainValue, { functionAllowed, prototypeStrict }) => {
   // so that we discover if any prototype is part of the value
   const prototypeValueToIdentifier = (prototypeValue) => {
     // prototype is null
-    if (prototypeValue === null) return valueToIdentifier(prototypeValue)
+    if (prototypeValue === null) {
+      return valueToIdentifier(prototypeValue)
+    }
 
     // prototype found somewhere already
     const prototypeExistingIdentifier = identifierForComposite(prototypeValue)
-    if (prototypeExistingIdentifier !== undefined) return prototypeExistingIdentifier
+    if (prototypeExistingIdentifier !== undefined) {
+      return prototypeExistingIdentifier
+    }
 
     // mark prototype as visited
     const prototypeIdentifier = identifierForNewValue(prototypeValue)
@@ -199,17 +213,26 @@ export const decompose = (mainValue, { functionAllowed, prototypeStrict }) => {
     return prototypeValueToIdentifier(Object.getPrototypeOf(prototypeValue), true)
   }
   const identifierForValueOf = (value, path = []) => {
-    if (value instanceof Array) return valueToIdentifier(value.length, [...path, "length"])
+    if (value instanceof Array) {
+      return valueToIdentifier(value.length, [...path, "length"])
+    }
 
-    if ("valueOf" in value === false) return undefined
+    if ("valueOf" in value === false) {
+      return undefined
+    }
 
-    if (typeof value.valueOf !== "function") return undefined
+    if (typeof value.valueOf !== "function") {
+      return undefined
+    }
 
     const valueOfReturnValue = value.valueOf()
-    if (!isComposite(valueOfReturnValue))
+    if (!isComposite(valueOfReturnValue)) {
       return valueToIdentifier(valueOfReturnValue, [...path, "valueOf()"])
+    }
 
-    if (valueOfReturnValue === value) return undefined
+    if (valueOfReturnValue === value) {
+      return undefined
+    }
 
     throw new Error(createUnexpectedValueOfReturnValueMessage())
   }
@@ -253,17 +276,23 @@ export const decompose = (mainValue, { functionAllowed, prototypeStrict }) => {
 }
 
 const primitiveToRecipe = (value) => {
-  if (typeof value === "symbol") return symbolToRecipe(value)
+  if (typeof value === "symbol") {
+    return symbolToRecipe(value)
+  }
 
   return createPimitiveRecipe(value)
 }
 
 const symbolToRecipe = (symbol) => {
   const globalSymbolKey = Symbol.keyFor(symbol)
-  if (globalSymbolKey !== undefined) return createGlobalSymbolRecipe(globalSymbolKey)
+  if (globalSymbolKey !== undefined) {
+    return createGlobalSymbolRecipe(globalSymbolKey)
+  }
 
   const symbolGlobalPath = getPrimitiveGlobalPath(symbol)
-  if (!symbolGlobalPath) throw new Error(createUnknownSymbolMessage({ symbol }))
+  if (!symbolGlobalPath) {
+    throw new Error(createUnknownSymbolMessage({ symbol }))
+  }
 
   return createGlobalReferenceRecipe(symbolGlobalPath)
 }
@@ -310,28 +339,36 @@ const createCompositeRecipe = ({
 }
 
 const createPromiseAreNotSupportedMessage = ({ path }) => {
-  if (path.length === 0) return `promise are not supported.`
+  if (path.length === 0) {
+    return `promise are not supported.`
+  }
 
   return `promise are not supported.
 promise found at: ${path.join("")}`
 }
 
 const createWeakSetAreNotSupportedMessage = ({ path }) => {
-  if (path.length === 0) return `weakSet are not supported.`
+  if (path.length === 0) {
+    return `weakSet are not supported.`
+  }
 
   return `weakSet are not supported.
 weakSet found at: ${path.join("")}`
 }
 
 const createWeakMapAreNotSupportedMessage = ({ path }) => {
-  if (path.length === 0) return `weakMap are not supported.`
+  if (path.length === 0) {
+    return `weakMap are not supported.`
+  }
 
   return `weakMap are not supported.
 weakMap found at: ${path.join("")}`
 }
 
 const createForbiddenFunctionMessage = ({ path }) => {
-  if (path.length === 0) return `function are not allowed.`
+  if (path.length === 0) {
+    return `function are not allowed.`
+  }
 
   return `function are not allowed.
 function found at: ${path.join("")}`
