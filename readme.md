@@ -17,7 +17,11 @@ Convert value into evaluable string.
 
 # Presentation
 
-`@jsenv/uneval` turns a JavaScript value into a string that can be evaluated. It exists to overcome `JSON.stringify` limitations but **prefer `JSON.stringify` over `uneval` when you can**.
+`@jsenv/uneval` turns a JavaScript value into a string that can be evaluated. It exists to overcome `JSON.stringify` limitations.
+
+Using `@jsenv/uneval` + `eval` is more powerful and accurate than `JSON.stringify` + `JSON.parse`. It supports circular structure and preserves types like `Date`, `Infinity`, `-0`, `BigInt` and more.
+
+However `JSON.stringify` is way faster and is safe (it cannot execute arbitrary code). So **prefer `JSON.stringify + JSON.parse` over `uneval + eval` when you can**.
 
 ## JSON.stringify limits
 
@@ -45,6 +49,23 @@ Convert value into evaluable string.
   JSON.stringify(Infinity) === "null"
   ```
 
+- Returns a string for a date
+
+  ```js
+  JSON.stringify(new Date(0)) === `"1970-01-01T00:00:00.000Z"`
+  ```
+
+- Throws on BigInt
+
+  ```js
+  try {
+    JSON.stringify(1n)
+  } catch (e) {
+    e.type // "TypeError"
+    e.message // "Do not know how to serialize a BigInt"
+  }
+  ```
+
 - Throws on circular structure
 
   ```js
@@ -53,14 +74,15 @@ Convert value into evaluable string.
   try {
     JSON.stringify(value)
   } catch (error) {
-    error.name === "TypeError"
+    error.name // "TypeError"
+    error.message // "Converting circular structure to JSON"
   }
   ```
 
-- Returns a string for a date
+- Ignores non enumerable properties
 
   ```js
-  JSON.stringify(new Date(0)) === `"1970-01-01T00:00:00.000Z"`
+  JSON.stringify(Object.defineProperty({}, "foo", { enumerable: false })) === "{}"
   ```
 
 - Is not optimized for repetitive structure
@@ -71,12 +93,6 @@ Convert value into evaluable string.
   ```
 
   `"a-very-long-string"` would be repeated twice the string.
-
-- Ignores non enumerable properties
-
-  ```js
-  JSON.stringify(Object.defineProperty({}, "foo", { enumerable: false })) === "{}"
-  ```
 
 ## Browser example
 
