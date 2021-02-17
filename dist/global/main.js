@@ -1,4 +1,4 @@
-var __jsenv_uneval__ = function (exports) {
+var __jsenv_uneval__ = (function (exports) {
   'use strict';
 
   var nativeTypeOf = function nativeTypeOf(obj) {
@@ -9,36 +9,48 @@ var __jsenv_uneval__ = function (exports) {
     return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
   };
 
-  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? nativeTypeOf : customTypeOf; // eslint-disable-next-line consistent-return
+  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? nativeTypeOf : customTypeOf;
 
+  /* eslint-disable no-eq-null, eqeqeq */
+  function arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+    var arr2 = new Array(len);
 
-  var arrayWithoutHoles = function (arr) {
-    if (Array.isArray(arr)) {
-      var i = 0;
-      var arr2 = new Array(arr.length);
-
-      for (; i < arr.length; i++) {
-        arr2[i] = arr[i];
-      }
-
-      return arr2;
+    for (var i = 0; i < len; i++) {
+      arr2[i] = arr[i];
     }
-  }; // eslint-disable-next-line consistent-return
 
+    return arr2;
+  }
 
-  var iterableToArray = function (iter) {
-    if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
-  };
+  var arrayWithoutHoles = (function (arr) {
+    if (Array.isArray(arr)) return arrayLikeToArray(arr);
+  });
 
-  var nonIterableSpread = function () {
-    throw new TypeError("Invalid attempt to spread non-iterable instance");
-  };
+  // eslint-disable-next-line consistent-return
+  var iterableToArray = (function (iter) {
+    if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter);
+  });
 
-  var _toConsumableArray = function (arr) {
-    return arrayWithoutHoles(arr) || iterableToArray(arr) || nonIterableSpread();
-  }; // https://developer.mozilla.org/en-US/docs/Glossary/Primitive
+  /* eslint-disable consistent-return */
+  function unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return arrayLikeToArray(o, minLen);
+  }
 
+  var nonIterableSpread = (function () {
+    throw new TypeError("Invalid attempt to spread non-iterable instance.\\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  });
 
+  var _toConsumableArray = (function (arr) {
+    return arrayWithoutHoles(arr) || iterableToArray(arr) || unsupportedIterableToArray(arr) || nonIterableSpread();
+  });
+
+  // https://developer.mozilla.org/en-US/docs/Glossary/Primitive
   var isComposite = function isComposite(value) {
     if (value === null) return false;
 
@@ -51,11 +63,9 @@ var __jsenv_uneval__ = function (exports) {
 
   var compositeWellKnownMap = new WeakMap();
   var primitiveWellKnownMap = new Map();
-
   var getCompositeGlobalPath = function getCompositeGlobalPath(value) {
     return compositeWellKnownMap.get(value);
   };
-
   var getPrimitiveGlobalPath = function getPrimitiveGlobalPath(value) {
     return primitiveWellKnownMap.get(value);
   };
@@ -78,6 +88,13 @@ var __jsenv_uneval__ = function (exports) {
             }
 
             throw e;
+          }
+
+          if (!descriptor) {
+            // it's apparently possible to have getOwnPropertyNames returning
+            // a property that later returns a null descriptor
+            // for instance window.showModalDialog in webkit 13.0
+            return;
           } // do not trigger getter/setter
 
 
@@ -439,11 +456,11 @@ var __jsenv_uneval__ = function (exports) {
   var createUnknownPrototypeMessage = function createUnknownPrototypeMessage(_ref10) {
     var prototypeValue = _ref10.prototypeValue;
     return "prototype must be global, like Object.prototype, or somewhere in the value.\nprototype constructor name: ".concat(prototypeValue.constructor.name);
-  }; // be carefull because this function is mutating recipe objects inside the recipeArray.
+  };
+
+  // be carefull because this function is mutating recipe objects inside the recipeArray.
   // this is not an issue because each recipe object is not accessible from the outside
   // when used internally by uneval
-
-
   var sortRecipe = function sortRecipe(recipeArray) {
     var findInRecipePrototypeChain = function findInRecipePrototypeChain(recipe, callback) {
       var currentRecipe = recipe; // eslint-disable-next-line no-constant-condition
@@ -492,10 +509,10 @@ var __jsenv_uneval__ = function (exports) {
       return 1;
     });
     return recipeArrayOrdered;
-  }; // https://github.com/joliss/js-string-escape/blob/master/index.js
+  };
+
+  // https://github.com/joliss/js-string-escape/blob/master/index.js
   // http://javascript.crockford.com/remedial.html
-
-
   var escapeString = function escapeString(value) {
     var string = String(value);
     var i = 0;
@@ -543,7 +560,7 @@ var __jsenv_uneval__ = function (exports) {
         valueMap = _decompose.valueMap;
 
     var recipeArraySorted = sortRecipe(recipeArray);
-    var source = "(function () {\nObject.defineProperty(Object.prototype, \"__global__\", {\n  get: function () { return this },\n  configurable: true,\n});\nvar globalObject = __global__;\ndelete Object.prototype.__global__;\n\nfunction safeDefineProperty(object, propertyNameOrSymbol, descriptor) {\n  var currentDescriptor = Object.getOwnPropertyDescriptor(object, propertyNameOrSymbol);\n  if (currentDescriptor && !currentDescriptor.configurable) return\n  Object.defineProperty(object, propertyNameOrSymbol, descriptor)\n};\n";
+    var source = "(function () {\nvar globalObject\ntry {\n  globalObject = Function('return this')() || (42, eval)('this');\n} catch(e) {\n  globalObject = window;\n}\n\nfunction safeDefineProperty(object, propertyNameOrSymbol, descriptor) {\n  var currentDescriptor = Object.getOwnPropertyDescriptor(object, propertyNameOrSymbol);\n  if (currentDescriptor && !currentDescriptor.configurable) return\n  Object.defineProperty(object, propertyNameOrSymbol, descriptor)\n};\n";
     var variableNameMap = {};
     recipeArray.forEach(function (recipe, index) {
       var indexSorted = recipeArraySorted.indexOf(recipe);
@@ -676,6 +693,11 @@ var __jsenv_uneval__ = function (exports) {
   };
 
   exports.uneval = uneval;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
+
   return exports;
-}({});
-//# sourceMappingURL=./main.js.map
+
+}({}));
+
+//# sourceMappingURL=main.js.map
