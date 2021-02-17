@@ -7,33 +7,12 @@
       "request": "launch",
       "protocol": "inspector",
       "program": "${file}",
-      "runtimeArgs": ["--unhandled-rejections=strict"],
-      "autoAttachChildProcesses": true,
-      // "sourceMaps": false,
-      "smartStep": true,
-      "skipFiles": [
-        // force-array-multiline
-        // "node_modules/**",
-        "node_modules/@babel/template/**",
-        "node_modules/@dmail/cancellation/**",
-        "node_modules/playwright/**",
-        "<node_internals>/**"
-      ]
-    },
-    {
-      "name": "node13",
-      "type": "node",
-      "request": "launch",
-      "protocol": "inspector",
-      "program": "${file}",
-      "runtimeVersion": "13.8.0",
+      // "runtimeVersion": "14.5.0",
       "runtimeArgs": [
         "--unhandled-rejections=strict",
         "--experimental-json-modules",
-        // this is to disable experimental warning
-        "--no-warnings"
+        "--experimental-top-level-await"
       ],
-      // "args": ["--coverage"],
       "autoAttachChildProcesses": true,
       "sourceMaps": true,
       "smartStep": true,
@@ -42,8 +21,6 @@
         // "node_modules/**",
         "node_modules/@babel/template/**",
         "node_modules/@dmail/cancellation/**",
-        "node_modules/@rollup/**",
-        "node_modules/playwright/**",
         "<node_internals>/**"
       ]
     },
@@ -53,28 +30,23 @@
       "request": "launch",
       "protocol": "inspector",
       "program": "${workspaceFolder}/script/run-node/run-node.js",
+      "runtimeArgs": [
+        "--unhandled-rejections=strict",
+        // this is to disable experimental warning
+        "--no-warnings"
+      ],
       "args": ["${relativeFile}"],
       "autoAttachChildProcesses": true,
-      "sourceMaps": true,
+      // "sourceMaps": false,
       "smartStep": true,
       "skipFiles": [
+        // force-array-multiline
         // "node_modules/**",
-        "node_modules/@babel/**",
-        "node_modules/@jsenv/cancellation/**",
-        "<node_internals>/**/*.js"
-      ]
-    },
-    {
-      "name": "jsenv-node-attach-child",
-      "type": "node",
-      "request": "attach",
-      "port": 40000,
-      "smartStep": true,
-      "sourceMaps": true,
-      "skipFiles": [
-        // "node_modules/**",
-        "node_modules/@babel/**",
-        "node_modules/@jsenv/cancellation/**",
+        "node_modules/@jsenv/core/**",
+        "node_modules/@babel/template/**",
+        "node_modules/@dmail/cancellation/**",
+        "node_modules/rollup/**",
+        "node_modules/@rollup/**",
         "<node_internals>/**/*.js"
       ]
     }

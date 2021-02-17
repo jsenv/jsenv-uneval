@@ -34,6 +34,13 @@ const visitGlobalObject = value => {
           }
 
           throw e;
+        }
+
+        if (!descriptor) {
+          // it's apparently possible to have getOwnPropertyNames returning
+          // a property that later returns a null descriptor
+          // for instance window.showModalDialog in webkit 13.0
+          return;
         } // do not trigger getter/setter
 
 
@@ -495,12 +502,12 @@ const uneval = (value, {
   });
   const recipeArraySorted = sortRecipe(recipeArray);
   let source = `(function () {
-Object.defineProperty(Object.prototype, "__global__", {
-  get: function () { return this },
-  configurable: true,
-});
-var globalObject = __global__;
-delete Object.prototype.__global__;
+var globalObject
+try {
+  globalObject = Function('return this')() || (42, eval)('this');
+} catch(e) {
+  globalObject = window;
+}
 
 function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
   var currentDescriptor = Object.getOwnPropertyDescriptor(object, propertyNameOrSymbol);
@@ -651,4 +658,5 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
 };
 
 exports.uneval = uneval;
+
 //# sourceMappingURL=main.cjs.map

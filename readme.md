@@ -17,7 +17,7 @@ Convert value into evaluable string.
 
 # Presentation
 
-`@jsenv/uneval` turns a JavaScript value into a string that can be evaluated. It exists to overcome `JSON.stringify` limitations but prefer `JSON.stringify` over `uneval` when you can.
+`@jsenv/uneval` turns a JavaScript value into a string that can be evaluated. It exists to overcome `JSON.stringify` limitations but **prefer `JSON.stringify` over `uneval` when you can**.
 
 ## JSON.stringify limits
 
@@ -103,5 +103,5 @@ console.log(eval(uneval({ answer: 42 })))
 # Installation
 
 ```console
-npm install @jsenv/uneval@1.2.0
+npm install @jsenv/uneval
 ```

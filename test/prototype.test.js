@@ -1,18 +1,17 @@
 /* eslint-disable no-eval */
 import { assert } from "@jsenv/assert"
-import { uneval } from "../index.js"
+import { uneval } from "@jsenv/uneval"
 
 // non strict prototype
 // (prototype is not found globally so we fallback to the parent prototype)
-{
-  function FetchError(message) {
-    Error.call(this, message)
-    this.message = message
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, this.constructor)
-    }
+function FetchError(message) {
+  Error.call(this, message)
+  this.message = message
+  if (Error.captureStackTrace) {
+    Error.captureStackTrace(this, this.constructor)
   }
-
+}
+{
   const value = new FetchError("coucou")
   const actual = eval(uneval(value))
   const expected = { message: "coucou" }
@@ -48,10 +47,10 @@ prototype constructor name: Object`,
 }
 
 // unknown prototype by constructor
+function CustomConstructor() {
+  this.foo = true
+}
 {
-  function CustomConstructor() {
-    this.foo = true
-  }
   const value = new CustomConstructor()
   try {
     uneval(value, { prototypeStrict: true })

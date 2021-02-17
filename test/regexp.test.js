@@ -1,6 +1,6 @@
 /* eslint-disable no-eval */
 import { assert } from "@jsenv/assert"
-import { uneval } from "../index.js"
+import { uneval } from "@jsenv/uneval"
 
 {
   const value = /ok/g

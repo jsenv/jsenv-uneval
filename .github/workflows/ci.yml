@@ -9,29 +9,21 @@ on:
       - master
 
 jobs:
-  ci:
+  test:
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
-        node: [12.8.0]
-      max-parallel: 1 # to ensure windows failure can prevent ubuntu from publishing package
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: [14.5.0]
     runs-on: ${{ matrix.os }}
-    name: node 12 on ${{ matrix.os }}
+    name: test on ${{ matrix.os }} and node ${{ matrix.node }}
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-      - name: install required linux packages
-        if: runner.os == 'Linux'
-        # see https://github.com/microsoft/playwright/blob/1f8508d1ed862f787d8e02a1fe4d1be186f69a81/.github/workflows/tests.yml#L25-L28
-        # and https://github.com/microsoft/playwright/blob/1f8508d1ed862f787d8e02a1fe4d1be186f69a81/.github/workflows/tests.yml#L87-L90
-        run: |
-          sudo apt-get update
-          sudo apt-get install libgbm-dev xvfb
-          sudo apt-get install libwoff1 libopus0 libwebp6 libwebpdemux2 libenchant1c2a libgudev-1.0-0 libsecret-1-0 libhyphen0 libgdk-pixbuf2.0-0 libegl1 libgles2 libevent-2.1-6 libnotify4 libxslt1.1
+      - uses: microsoft/playwright-github-action@v1
       - name: npm install
         run: |
           npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
@@ -49,14 +41,27 @@ jobs:
         run: npm run upload-coverage
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  release:
+    needs: [test]
+    if: success() && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    name: release
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "14.x"
+      - name: npm install
+        run: |
+          npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
+          npm install
       - name: publish package
-        if: github.event_name == 'push' && runner.os == 'Linux' # runner check to run it once
-        run: node ./.github/publish-package.js
+        run: node --experimental-top-level-await ./.github/release/publish-package.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: ensure github release
-        if: github.event_name == 'push' && runner.os == 'Linux' # runner check to run it once
-        run: node ./.github/ensure-github-release-for-package.js
+        run: node ./.github/release/ensure-github-release-for-package.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
