@@ -40,8 +40,14 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
   }
 
   const primitiveRecipeToSetupSource = ({ value }) => {
-    if (typeof value === "string") {
+    const type = typeof value
+
+    if (type === "string") {
       return `"${escapeString(value)}";`
+    }
+
+    if (type === "bigint") {
+      return `${value.toString()}n`
     }
 
     if (Object.is(value, -0)) {
@@ -77,6 +83,10 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
 
     if (valueOfIdentifier === undefined) {
       return `new ${prototypeConstructor.name}();`
+    }
+
+    if (prototypeConstructor.name === "BigInt") {
+      return `Object(${identifierToVariableName(valueOfIdentifier)})`
     }
 
     return `new ${prototypeConstructor.name}(${identifierToVariableName(valueOfIdentifier)});`

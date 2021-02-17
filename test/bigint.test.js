@@ -9,3 +9,11 @@ import { uneval } from "@jsenv/uneval"
   const expected = value
   assert({ actual, expected })
 }
+
+{
+  const value = Object(BigInt(1))
+  const source = uneval(value)
+  const actual = eval(source)
+  const expected = value
+  assert({ actual, expected })
+}
