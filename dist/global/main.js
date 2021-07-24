@@ -52,12 +52,20 @@ var __jsenv_uneval__ = (function (exports) {
 
   // https://developer.mozilla.org/en-US/docs/Glossary/Primitive
   var isComposite = function isComposite(value) {
-    if (value === null) return false;
+    if (value === null) {
+      return false;
+    }
 
     var type = _typeof(value);
 
-    if (type === "object") return true;
-    if (type === "function") return true;
+    if (type === "object") {
+      return true;
+    }
+
+    if (type === "function") {
+      return true;
+    }
+
     return false;
   };
 
@@ -73,7 +81,10 @@ var __jsenv_uneval__ = (function (exports) {
   var visitGlobalObject = function visitGlobalObject(value) {
     var visitValue = function visitValue(value, path) {
       if (isComposite(value)) {
-        if (compositeWellKnownMap.has(value)) return; // prevent infinite recursion
+        // prevent infinite recursion
+        if (compositeWellKnownMap.has(value)) {
+          return;
+        }
 
         compositeWellKnownMap.set(value, path);
 
@@ -124,7 +135,8 @@ var __jsenv_uneval__ = (function (exports) {
 
   var decompose = function decompose(mainValue, _ref) {
     var functionAllowed = _ref.functionAllowed,
-        prototypeStrict = _ref.prototypeStrict;
+        prototypeStrict = _ref.prototypeStrict,
+        ignoreSymbols = _ref.ignoreSymbols;
     var valueMap = {};
     var recipeArray = [];
 
@@ -134,7 +146,9 @@ var __jsenv_uneval__ = (function (exports) {
       if (!isComposite(value)) {
         var _existingIdentifier = identifierForPrimitive(value);
 
-        if (_existingIdentifier !== undefined) return _existingIdentifier;
+        if (_existingIdentifier !== undefined) {
+          return _existingIdentifier;
+        }
 
         var _identifier = identifierForNewValue(value);
 
@@ -142,20 +156,36 @@ var __jsenv_uneval__ = (function (exports) {
         return _identifier;
       }
 
-      if (typeof Promise === "function" && value instanceof Promise) throw new Error(createPromiseAreNotSupportedMessage({
-        path: path
-      }));
-      if (typeof WeakSet === "function" && value instanceof WeakSet) throw new Error(createWeakSetAreNotSupportedMessage({
-        path: path
-      }));
-      if (typeof WeakMap === "function" && value instanceof WeakMap) throw new Error(createWeakMapAreNotSupportedMessage({
-        path: path
-      }));
-      if (typeof value === "function" && !functionAllowed) throw new Error(createForbiddenFunctionMessage({
-        path: path
-      }));
+      if (typeof Promise === "function" && value instanceof Promise) {
+        throw new Error(createPromiseAreNotSupportedMessage({
+          path: path
+        }));
+      }
+
+      if (typeof WeakSet === "function" && value instanceof WeakSet) {
+        throw new Error(createWeakSetAreNotSupportedMessage({
+          path: path
+        }));
+      }
+
+      if (typeof WeakMap === "function" && value instanceof WeakMap) {
+        throw new Error(createWeakMapAreNotSupportedMessage({
+          path: path
+        }));
+      }
+
+      if (typeof value === "function" && !functionAllowed) {
+        throw new Error(createForbiddenFunctionMessage({
+          path: path
+        }));
+      }
+
       var existingIdentifier = identifierForComposite(value);
-      if (existingIdentifier !== undefined) return existingIdentifier;
+
+      if (existingIdentifier !== undefined) {
+        return existingIdentifier;
+      }
+
       var identifier = identifierForNewValue(value);
       var compositeGlobalPath = getCompositeGlobalPath(value);
 
@@ -175,15 +205,19 @@ var __jsenv_uneval__ = (function (exports) {
         });
       });
       var symbolDescriptionArray = [];
-      Object.getOwnPropertySymbols(value).forEach(function (symbol) {
-        var propertyDescriptor = Object.getOwnPropertyDescriptor(value, symbol);
-        var symbolIdentifier = valueToIdentifier(symbol, [].concat(_toConsumableArray(path), ["[".concat(symbol.toString(), "]")]));
-        var propertyDescription = computePropertyDescription(propertyDescriptor, symbol, path);
-        symbolDescriptionArray.push({
-          symbolIdentifier: symbolIdentifier,
-          propertyDescription: propertyDescription
+
+      if (!ignoreSymbols) {
+        Object.getOwnPropertySymbols(value).forEach(function (symbol) {
+          var propertyDescriptor = Object.getOwnPropertyDescriptor(value, symbol);
+          var symbolIdentifier = valueToIdentifier(symbol, [].concat(_toConsumableArray(path), ["[".concat(symbol.toString(), "]")]));
+          var propertyDescription = computePropertyDescription(propertyDescriptor, symbol, path);
+          symbolDescriptionArray.push({
+            symbolIdentifier: symbolIdentifier,
+            propertyDescription: propertyDescription
+          });
         });
-      });
+      }
+
       var methodDescriptionArray = computeMethodDescriptionArray(value, path);
       var extensible = Object.isExtensible(value);
       recipeArray[identifier] = createCompositeRecipe({
@@ -196,14 +230,20 @@ var __jsenv_uneval__ = (function (exports) {
     };
 
     var computePropertyDescription = function computePropertyDescription(propertyDescriptor, propertyNameOrSymbol, path) {
-      if (propertyDescriptor.set && !functionAllowed) throw new Error(createForbiddenPropertySetterMessage({
-        path: path,
-        propertyNameOrSymbol: propertyNameOrSymbol
-      }));
-      if (propertyDescriptor.get && !functionAllowed) throw new Error(createForbiddenPropertyGetterMessage({
-        path: path,
-        propertyNameOrSymbol: propertyNameOrSymbol
-      }));
+      if (propertyDescriptor.set && !functionAllowed) {
+        throw new Error(createForbiddenPropertySetterMessage({
+          path: path,
+          propertyNameOrSymbol: propertyNameOrSymbol
+        }));
+      }
+
+      if (propertyDescriptor.get && !functionAllowed) {
+        throw new Error(createForbiddenPropertyGetterMessage({
+          path: path,
+          propertyNameOrSymbol: propertyNameOrSymbol
+        }));
+      }
+
       return {
         configurable: propertyDescriptor.configurable,
         writable: propertyDescriptor.writable,
@@ -280,10 +320,17 @@ var __jsenv_uneval__ = (function (exports) {
 
     var prototypeValueToIdentifier = function prototypeValueToIdentifier(prototypeValue) {
       // prototype is null
-      if (prototypeValue === null) return valueToIdentifier(prototypeValue); // prototype found somewhere already
+      if (prototypeValue === null) {
+        return valueToIdentifier(prototypeValue);
+      } // prototype found somewhere already
+
 
       var prototypeExistingIdentifier = identifierForComposite(prototypeValue);
-      if (prototypeExistingIdentifier !== undefined) return prototypeExistingIdentifier; // mark prototype as visited
+
+      if (prototypeExistingIdentifier !== undefined) {
+        return prototypeExistingIdentifier;
+      } // mark prototype as visited
+
 
       var prototypeIdentifier = identifierForNewValue(prototypeValue); // prototype is a global reference ?
 
@@ -306,12 +353,29 @@ var __jsenv_uneval__ = (function (exports) {
 
     var identifierForValueOf = function identifierForValueOf(value) {
       var path = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-      if (value instanceof Array) return valueToIdentifier(value.length, [].concat(_toConsumableArray(path), ["length"]));
-      if ("valueOf" in value === false) return undefined;
-      if (typeof value.valueOf !== "function") return undefined;
+
+      if (value instanceof Array) {
+        return valueToIdentifier(value.length, [].concat(_toConsumableArray(path), ["length"]));
+      }
+
+      if ("valueOf" in value === false) {
+        return undefined;
+      }
+
+      if (typeof value.valueOf !== "function") {
+        return undefined;
+      }
+
       var valueOfReturnValue = value.valueOf();
-      if (!isComposite(valueOfReturnValue)) return valueToIdentifier(valueOfReturnValue, [].concat(_toConsumableArray(path), ["valueOf()"]));
-      if (valueOfReturnValue === value) return undefined;
+
+      if (!isComposite(valueOfReturnValue)) {
+        return valueToIdentifier(valueOfReturnValue, [].concat(_toConsumableArray(path), ["valueOf()"]));
+      }
+
+      if (valueOfReturnValue === value) {
+        return undefined;
+      }
+
       throw new Error(createUnexpectedValueOfReturnValueMessage());
     };
 
@@ -354,17 +418,28 @@ var __jsenv_uneval__ = (function (exports) {
   };
 
   var primitiveToRecipe = function primitiveToRecipe(value) {
-    if (_typeof(value) === "symbol") return symbolToRecipe(value);
+    if (_typeof(value) === "symbol") {
+      return symbolToRecipe(value);
+    }
+
     return createPimitiveRecipe(value);
   };
 
   var symbolToRecipe = function symbolToRecipe(symbol) {
     var globalSymbolKey = Symbol.keyFor(symbol);
-    if (globalSymbolKey !== undefined) return createGlobalSymbolRecipe(globalSymbolKey);
+
+    if (globalSymbolKey !== undefined) {
+      return createGlobalSymbolRecipe(globalSymbolKey);
+    }
+
     var symbolGlobalPath = getPrimitiveGlobalPath(symbol);
-    if (!symbolGlobalPath) throw new Error(createUnknownSymbolMessage({
-      symbol: symbol
-    }));
+
+    if (!symbolGlobalPath) {
+      throw new Error(createUnknownSymbolMessage({
+        symbol: symbol
+      }));
+    }
+
     return createGlobalReferenceRecipe(symbolGlobalPath);
   };
 
@@ -410,25 +485,41 @@ var __jsenv_uneval__ = (function (exports) {
 
   var createPromiseAreNotSupportedMessage = function createPromiseAreNotSupportedMessage(_ref3) {
     var path = _ref3.path;
-    if (path.length === 0) return "promise are not supported.";
+
+    if (path.length === 0) {
+      return "promise are not supported.";
+    }
+
     return "promise are not supported.\npromise found at: ".concat(path.join(""));
   };
 
   var createWeakSetAreNotSupportedMessage = function createWeakSetAreNotSupportedMessage(_ref4) {
     var path = _ref4.path;
-    if (path.length === 0) return "weakSet are not supported.";
+
+    if (path.length === 0) {
+      return "weakSet are not supported.";
+    }
+
     return "weakSet are not supported.\nweakSet found at: ".concat(path.join(""));
   };
 
   var createWeakMapAreNotSupportedMessage = function createWeakMapAreNotSupportedMessage(_ref5) {
     var path = _ref5.path;
-    if (path.length === 0) return "weakMap are not supported.";
+
+    if (path.length === 0) {
+      return "weakMap are not supported.";
+    }
+
     return "weakMap are not supported.\nweakMap found at: ".concat(path.join(""));
   };
 
   var createForbiddenFunctionMessage = function createForbiddenFunctionMessage(_ref6) {
     var path = _ref6.path;
-    if (path.length === 0) return "function are not allowed.";
+
+    if (path.length === 0) {
+      return "function are not allowed.";
+    }
+
     return "function are not allowed.\nfunction found at: ".concat(path.join(""));
   };
 
@@ -466,11 +557,21 @@ var __jsenv_uneval__ = (function (exports) {
       var currentRecipe = recipe; // eslint-disable-next-line no-constant-condition
 
       while (true) {
-        if (currentRecipe.type !== "composite") break;
+        if (currentRecipe.type !== "composite") {
+          break;
+        }
+
         var prototypeIdentifier = currentRecipe.prototypeIdentifier;
-        if (prototypeIdentifier === undefined) break;
+
+        if (prototypeIdentifier === undefined) {
+          break;
+        }
+
         currentRecipe = recipeArray[prototypeIdentifier];
-        if (callback(currentRecipe, prototypeIdentifier)) return prototypeIdentifier;
+
+        if (callback(currentRecipe, prototypeIdentifier)) {
+          return prototypeIdentifier;
+        }
       }
 
       return undefined;
@@ -486,25 +587,38 @@ var __jsenv_uneval__ = (function (exports) {
           return recipeCandidate === rightRecipe;
         }); // if left recipe requires right recipe, left must be after right
 
-        if (rightRecipeIsInLeftRecipePrototypeChain) return 1;
+        if (rightRecipeIsInLeftRecipePrototypeChain) {
+          return 1;
+        }
+
         var leftRecipeIsInRightRecipePrototypeChain = findInRecipePrototypeChain(rightRecipe, function (recipeCandidate) {
           return recipeCandidate === leftRecipe;
         }); // if right recipe requires left recipe, right must be after left
 
-        if (leftRecipeIsInRightRecipePrototypeChain) return -1;
+        if (leftRecipeIsInRightRecipePrototypeChain) {
+          return -1;
+        }
       }
 
       if (leftType !== rightType) {
         // if left is a composite, left must be after right
-        if (leftType === "composite") return 1; // if right is a composite, right must be after left
+        if (leftType === "composite") {
+          return 1;
+        } // if right is a composite, right must be after left
 
-        if (rightType === "composite") return -1;
+
+        if (rightType === "composite") {
+          return -1;
+        }
       }
 
       var leftIndex = recipeArray.indexOf(leftRecipe);
       var rightIndex = recipeArray.indexOf(rightRecipe); // left was before right, don't change that
 
-      if (leftIndex < rightIndex) return -1; // right was after left, don't change that
+      if (leftIndex < rightIndex) {
+        return -1;
+      } // right was after left, don't change that
+
 
       return 1;
     });
@@ -549,11 +663,14 @@ var __jsenv_uneval__ = (function (exports) {
         _ref$functionAllowed = _ref.functionAllowed,
         functionAllowed = _ref$functionAllowed === void 0 ? false : _ref$functionAllowed,
         _ref$prototypeStrict = _ref.prototypeStrict,
-        prototypeStrict = _ref$prototypeStrict === void 0 ? false : _ref$prototypeStrict;
+        prototypeStrict = _ref$prototypeStrict === void 0 ? false : _ref$prototypeStrict,
+        _ref$ignoreSymbols = _ref.ignoreSymbols,
+        ignoreSymbols = _ref$ignoreSymbols === void 0 ? false : _ref$ignoreSymbols;
 
     var _decompose = decompose(value, {
       functionAllowed: functionAllowed,
-      prototypeStrict: prototypeStrict
+      prototypeStrict: prototypeStrict,
+      ignoreSymbols: ignoreSymbols
     }),
         recipeArray = _decompose.recipeArray,
         mainIdentifier = _decompose.mainIdentifier,
@@ -580,8 +697,21 @@ var __jsenv_uneval__ = (function (exports) {
 
     var primitiveRecipeToSetupSource = function primitiveRecipeToSetupSource(_ref2) {
       var value = _ref2.value;
-      if (typeof value === "string") return "\"".concat(escapeString(value), "\";");
-      if (Object.is(value, -0)) return "-0;";
+
+      var type = _typeof(value);
+
+      if (type === "string") {
+        return "\"".concat(escapeString(value), "\";");
+      }
+
+      if (type === "bigint") {
+        return "".concat(value.toString(), "n");
+      }
+
+      if (Object.is(value, -0)) {
+        return "-0;";
+      }
+
       return "".concat(String(value), ";");
     };
 
@@ -599,12 +729,31 @@ var __jsenv_uneval__ = (function (exports) {
     var compositeRecipeToSetupSource = function compositeRecipeToSetupSource(_ref3) {
       var prototypeIdentifier = _ref3.prototypeIdentifier,
           valueOfIdentifier = _ref3.valueOfIdentifier;
-      if (prototypeIdentifier === undefined) return identifierToVariableName(valueOfIdentifier);
+
+      if (prototypeIdentifier === undefined) {
+        return identifierToVariableName(valueOfIdentifier);
+      }
+
       var prototypeValue = valueMap[prototypeIdentifier];
-      if (prototypeValue === null) return "Object.create(null);";
+
+      if (prototypeValue === null) {
+        return "Object.create(null);";
+      }
+
       var prototypeConstructor = prototypeValue.constructor;
-      if (prototypeConstructor === Object) return "Object.create(".concat(identifierToVariableName(prototypeIdentifier), ");");
-      if (valueOfIdentifier === undefined) return "new ".concat(prototypeConstructor.name, "();");
+
+      if (prototypeConstructor === Object) {
+        return "Object.create(".concat(identifierToVariableName(prototypeIdentifier), ");");
+      }
+
+      if (valueOfIdentifier === undefined) {
+        return "new ".concat(prototypeConstructor.name, "();");
+      }
+
+      if (prototypeConstructor.name === "BigInt") {
+        return "Object(".concat(identifierToVariableName(valueOfIdentifier), ")");
+      }
+
       return "new ".concat(prototypeConstructor.name, "(").concat(identifierToVariableName(valueOfIdentifier), ");");
     };
 
@@ -614,7 +763,10 @@ var __jsenv_uneval__ = (function (exports) {
     });
 
     var recipeToMutateSource = function recipeToMutateSource(recipe, recipeVariableName) {
-      if (recipe.type === "composite") return compositeRecipeToMutateSource(recipe, recipeVariableName);
+      if (recipe.type === "composite") {
+        return compositeRecipeToMutateSource(recipe, recipeVariableName);
+      }
+
       return "";
     };
 

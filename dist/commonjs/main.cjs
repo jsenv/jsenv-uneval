@@ -4,10 +4,20 @@ Object.defineProperty(exports, '__esModule', { value: true });
 
 // https://developer.mozilla.org/en-US/docs/Glossary/Primitive
 const isComposite = value => {
-  if (value === null) return false;
+  if (value === null) {
+    return false;
+  }
+
   const type = typeof value;
-  if (type === "object") return true;
-  if (type === "function") return true;
+
+  if (type === "object") {
+    return true;
+  }
+
+  if (type === "function") {
+    return true;
+  }
+
   return false;
 };
 
@@ -19,7 +29,10 @@ const getPrimitiveGlobalPath = value => primitiveWellKnownMap.get(value);
 const visitGlobalObject = value => {
   const visitValue = (value, path) => {
     if (isComposite(value)) {
-      if (compositeWellKnownMap.has(value)) return; // prevent infinite recursion
+      // prevent infinite recursion
+      if (compositeWellKnownMap.has(value)) {
+        return;
+      }
 
       compositeWellKnownMap.set(value, path);
 
@@ -70,7 +83,8 @@ if (typeof global === "object") visitGlobalObject(global);
  */
 const decompose = (mainValue, {
   functionAllowed,
-  prototypeStrict
+  prototypeStrict,
+  ignoreSymbols
 }) => {
   const valueMap = {};
   const recipeArray = [];
@@ -78,26 +92,46 @@ const decompose = (mainValue, {
   const valueToIdentifier = (value, path = []) => {
     if (!isComposite(value)) {
       const existingIdentifier = identifierForPrimitive(value);
-      if (existingIdentifier !== undefined) return existingIdentifier;
+
+      if (existingIdentifier !== undefined) {
+        return existingIdentifier;
+      }
+
       const identifier = identifierForNewValue(value);
       recipeArray[identifier] = primitiveToRecipe(value);
       return identifier;
     }
 
-    if (typeof Promise === "function" && value instanceof Promise) throw new Error(createPromiseAreNotSupportedMessage({
-      path
-    }));
-    if (typeof WeakSet === "function" && value instanceof WeakSet) throw new Error(createWeakSetAreNotSupportedMessage({
-      path
-    }));
-    if (typeof WeakMap === "function" && value instanceof WeakMap) throw new Error(createWeakMapAreNotSupportedMessage({
-      path
-    }));
-    if (typeof value === "function" && !functionAllowed) throw new Error(createForbiddenFunctionMessage({
-      path
-    }));
+    if (typeof Promise === "function" && value instanceof Promise) {
+      throw new Error(createPromiseAreNotSupportedMessage({
+        path
+      }));
+    }
+
+    if (typeof WeakSet === "function" && value instanceof WeakSet) {
+      throw new Error(createWeakSetAreNotSupportedMessage({
+        path
+      }));
+    }
+
+    if (typeof WeakMap === "function" && value instanceof WeakMap) {
+      throw new Error(createWeakMapAreNotSupportedMessage({
+        path
+      }));
+    }
+
+    if (typeof value === "function" && !functionAllowed) {
+      throw new Error(createForbiddenFunctionMessage({
+        path
+      }));
+    }
+
     const existingIdentifier = identifierForComposite(value);
-    if (existingIdentifier !== undefined) return existingIdentifier;
+
+    if (existingIdentifier !== undefined) {
+      return existingIdentifier;
+    }
+
     const identifier = identifierForNewValue(value);
     const compositeGlobalPath = getCompositeGlobalPath(value);
 
@@ -117,15 +151,19 @@ const decompose = (mainValue, {
       });
     });
     const symbolDescriptionArray = [];
-    Object.getOwnPropertySymbols(value).forEach(symbol => {
-      const propertyDescriptor = Object.getOwnPropertyDescriptor(value, symbol);
-      const symbolIdentifier = valueToIdentifier(symbol, [...path, `[${symbol.toString()}]`]);
-      const propertyDescription = computePropertyDescription(propertyDescriptor, symbol, path);
-      symbolDescriptionArray.push({
-        symbolIdentifier,
-        propertyDescription
+
+    if (!ignoreSymbols) {
+      Object.getOwnPropertySymbols(value).forEach(symbol => {
+        const propertyDescriptor = Object.getOwnPropertyDescriptor(value, symbol);
+        const symbolIdentifier = valueToIdentifier(symbol, [...path, `[${symbol.toString()}]`]);
+        const propertyDescription = computePropertyDescription(propertyDescriptor, symbol, path);
+        symbolDescriptionArray.push({
+          symbolIdentifier,
+          propertyDescription
+        });
       });
-    });
+    }
+
     const methodDescriptionArray = computeMethodDescriptionArray(value, path);
     const extensible = Object.isExtensible(value);
     recipeArray[identifier] = createCompositeRecipe({
@@ -138,14 +176,20 @@ const decompose = (mainValue, {
   };
 
   const computePropertyDescription = (propertyDescriptor, propertyNameOrSymbol, path) => {
-    if (propertyDescriptor.set && !functionAllowed) throw new Error(createForbiddenPropertySetterMessage({
-      path,
-      propertyNameOrSymbol
-    }));
-    if (propertyDescriptor.get && !functionAllowed) throw new Error(createForbiddenPropertyGetterMessage({
-      path,
-      propertyNameOrSymbol
-    }));
+    if (propertyDescriptor.set && !functionAllowed) {
+      throw new Error(createForbiddenPropertySetterMessage({
+        path,
+        propertyNameOrSymbol
+      }));
+    }
+
+    if (propertyDescriptor.get && !functionAllowed) {
+      throw new Error(createForbiddenPropertyGetterMessage({
+        path,
+        propertyNameOrSymbol
+      }));
+    }
+
     return {
       configurable: propertyDescriptor.configurable,
       writable: propertyDescriptor.writable,
@@ -221,10 +265,17 @@ const decompose = (mainValue, {
 
   const prototypeValueToIdentifier = prototypeValue => {
     // prototype is null
-    if (prototypeValue === null) return valueToIdentifier(prototypeValue); // prototype found somewhere already
+    if (prototypeValue === null) {
+      return valueToIdentifier(prototypeValue);
+    } // prototype found somewhere already
+
 
     const prototypeExistingIdentifier = identifierForComposite(prototypeValue);
-    if (prototypeExistingIdentifier !== undefined) return prototypeExistingIdentifier; // mark prototype as visited
+
+    if (prototypeExistingIdentifier !== undefined) {
+      return prototypeExistingIdentifier;
+    } // mark prototype as visited
+
 
     const prototypeIdentifier = identifierForNewValue(prototypeValue); // prototype is a global reference ?
 
@@ -246,12 +297,28 @@ const decompose = (mainValue, {
   };
 
   const identifierForValueOf = (value, path = []) => {
-    if (value instanceof Array) return valueToIdentifier(value.length, [...path, "length"]);
-    if ("valueOf" in value === false) return undefined;
-    if (typeof value.valueOf !== "function") return undefined;
+    if (value instanceof Array) {
+      return valueToIdentifier(value.length, [...path, "length"]);
+    }
+
+    if ("valueOf" in value === false) {
+      return undefined;
+    }
+
+    if (typeof value.valueOf !== "function") {
+      return undefined;
+    }
+
     const valueOfReturnValue = value.valueOf();
-    if (!isComposite(valueOfReturnValue)) return valueToIdentifier(valueOfReturnValue, [...path, "valueOf()"]);
-    if (valueOfReturnValue === value) return undefined;
+
+    if (!isComposite(valueOfReturnValue)) {
+      return valueToIdentifier(valueOfReturnValue, [...path, "valueOf()"]);
+    }
+
+    if (valueOfReturnValue === value) {
+      return undefined;
+    }
+
     throw new Error(createUnexpectedValueOfReturnValueMessage());
   };
 
@@ -293,17 +360,28 @@ const decompose = (mainValue, {
 };
 
 const primitiveToRecipe = value => {
-  if (typeof value === "symbol") return symbolToRecipe(value);
+  if (typeof value === "symbol") {
+    return symbolToRecipe(value);
+  }
+
   return createPimitiveRecipe(value);
 };
 
 const symbolToRecipe = symbol => {
   const globalSymbolKey = Symbol.keyFor(symbol);
-  if (globalSymbolKey !== undefined) return createGlobalSymbolRecipe(globalSymbolKey);
+
+  if (globalSymbolKey !== undefined) {
+    return createGlobalSymbolRecipe(globalSymbolKey);
+  }
+
   const symbolGlobalPath = getPrimitiveGlobalPath(symbol);
-  if (!symbolGlobalPath) throw new Error(createUnknownSymbolMessage({
-    symbol
-  }));
+
+  if (!symbolGlobalPath) {
+    throw new Error(createUnknownSymbolMessage({
+      symbol
+    }));
+  }
+
   return createGlobalReferenceRecipe(symbolGlobalPath);
 };
 
@@ -351,7 +429,10 @@ const createCompositeRecipe = ({
 const createPromiseAreNotSupportedMessage = ({
   path
 }) => {
-  if (path.length === 0) return `promise are not supported.`;
+  if (path.length === 0) {
+    return `promise are not supported.`;
+  }
+
   return `promise are not supported.
 promise found at: ${path.join("")}`;
 };
@@ -359,7 +440,10 @@ promise found at: ${path.join("")}`;
 const createWeakSetAreNotSupportedMessage = ({
   path
 }) => {
-  if (path.length === 0) return `weakSet are not supported.`;
+  if (path.length === 0) {
+    return `weakSet are not supported.`;
+  }
+
   return `weakSet are not supported.
 weakSet found at: ${path.join("")}`;
 };
@@ -367,7 +451,10 @@ weakSet found at: ${path.join("")}`;
 const createWeakMapAreNotSupportedMessage = ({
   path
 }) => {
-  if (path.length === 0) return `weakMap are not supported.`;
+  if (path.length === 0) {
+    return `weakMap are not supported.`;
+  }
+
   return `weakMap are not supported.
 weakMap found at: ${path.join("")}`;
 };
@@ -375,7 +462,10 @@ weakMap found at: ${path.join("")}`;
 const createForbiddenFunctionMessage = ({
   path
 }) => {
-  if (path.length === 0) return `function are not allowed.`;
+  if (path.length === 0) {
+    return `function are not allowed.`;
+  }
+
   return `function are not allowed.
 function found at: ${path.join("")}`;
 };
@@ -414,11 +504,21 @@ const sortRecipe = recipeArray => {
     let currentRecipe = recipe; // eslint-disable-next-line no-constant-condition
 
     while (true) {
-      if (currentRecipe.type !== "composite") break;
+      if (currentRecipe.type !== "composite") {
+        break;
+      }
+
       const prototypeIdentifier = currentRecipe.prototypeIdentifier;
-      if (prototypeIdentifier === undefined) break;
+
+      if (prototypeIdentifier === undefined) {
+        break;
+      }
+
       currentRecipe = recipeArray[prototypeIdentifier];
-      if (callback(currentRecipe, prototypeIdentifier)) return prototypeIdentifier;
+
+      if (callback(currentRecipe, prototypeIdentifier)) {
+        return prototypeIdentifier;
+      }
     }
 
     return undefined;
@@ -432,23 +532,36 @@ const sortRecipe = recipeArray => {
     if (leftType === "composite" && rightType === "composite") {
       const rightRecipeIsInLeftRecipePrototypeChain = findInRecipePrototypeChain(leftRecipe, recipeCandidate => recipeCandidate === rightRecipe); // if left recipe requires right recipe, left must be after right
 
-      if (rightRecipeIsInLeftRecipePrototypeChain) return 1;
+      if (rightRecipeIsInLeftRecipePrototypeChain) {
+        return 1;
+      }
+
       const leftRecipeIsInRightRecipePrototypeChain = findInRecipePrototypeChain(rightRecipe, recipeCandidate => recipeCandidate === leftRecipe); // if right recipe requires left recipe, right must be after left
 
-      if (leftRecipeIsInRightRecipePrototypeChain) return -1;
+      if (leftRecipeIsInRightRecipePrototypeChain) {
+        return -1;
+      }
     }
 
     if (leftType !== rightType) {
       // if left is a composite, left must be after right
-      if (leftType === "composite") return 1; // if right is a composite, right must be after left
+      if (leftType === "composite") {
+        return 1;
+      } // if right is a composite, right must be after left
 
-      if (rightType === "composite") return -1;
+
+      if (rightType === "composite") {
+        return -1;
+      }
     }
 
     const leftIndex = recipeArray.indexOf(leftRecipe);
     const rightIndex = recipeArray.indexOf(rightRecipe); // left was before right, don't change that
 
-    if (leftIndex < rightIndex) return -1; // right was after left, don't change that
+    if (leftIndex < rightIndex) {
+      return -1;
+    } // right was after left, don't change that
+
 
     return 1;
   });
@@ -490,7 +603,8 @@ const escapeString = value => {
 
 const uneval = (value, {
   functionAllowed = false,
-  prototypeStrict = false
+  prototypeStrict = false,
+  ignoreSymbols = false
 } = {}) => {
   const {
     recipeArray,
@@ -498,7 +612,8 @@ const uneval = (value, {
     valueMap
   } = decompose(value, {
     functionAllowed,
-    prototypeStrict
+    prototypeStrict,
+    ignoreSymbols
   });
   const recipeArraySorted = sortRecipe(recipeArray);
   let source = `(function () {
@@ -533,8 +648,20 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
   const primitiveRecipeToSetupSource = ({
     value
   }) => {
-    if (typeof value === "string") return `"${escapeString(value)}";`;
-    if (Object.is(value, -0)) return "-0;";
+    const type = typeof value;
+
+    if (type === "string") {
+      return `"${escapeString(value)}";`;
+    }
+
+    if (type === "bigint") {
+      return `${value.toString()}n`;
+    }
+
+    if (Object.is(value, -0)) {
+      return "-0;";
+    }
+
     return `${String(value)};`;
   };
 
@@ -551,12 +678,30 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
     prototypeIdentifier,
     valueOfIdentifier
   }) => {
-    if (prototypeIdentifier === undefined) return identifierToVariableName(valueOfIdentifier);
+    if (prototypeIdentifier === undefined) {
+      return identifierToVariableName(valueOfIdentifier);
+    }
+
     const prototypeValue = valueMap[prototypeIdentifier];
-    if (prototypeValue === null) return `Object.create(null);`;
+
+    if (prototypeValue === null) {
+      return `Object.create(null);`;
+    }
+
     const prototypeConstructor = prototypeValue.constructor;
-    if (prototypeConstructor === Object) return `Object.create(${identifierToVariableName(prototypeIdentifier)});`;
-    if (valueOfIdentifier === undefined) return `new ${prototypeConstructor.name}();`;
+
+    if (prototypeConstructor === Object) {
+      return `Object.create(${identifierToVariableName(prototypeIdentifier)});`;
+    }
+
+    if (valueOfIdentifier === undefined) {
+      return `new ${prototypeConstructor.name}();`;
+    }
+
+    if (prototypeConstructor.name === "BigInt") {
+      return `Object(${identifierToVariableName(valueOfIdentifier)})`;
+    }
+
     return `new ${prototypeConstructor.name}(${identifierToVariableName(valueOfIdentifier)});`;
   };
 
@@ -567,7 +712,10 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
   });
 
   const recipeToMutateSource = (recipe, recipeVariableName) => {
-    if (recipe.type === "composite") return compositeRecipeToMutateSource(recipe, recipeVariableName);
+    if (recipe.type === "composite") {
+      return compositeRecipeToMutateSource(recipe, recipeVariableName);
+    }
+
     return ``;
   };
 
