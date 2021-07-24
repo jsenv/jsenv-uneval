@@ -2,10 +2,14 @@ import { decompose } from "./internal/decompose.js"
 import { sortRecipe } from "./internal/sortRecipe.js"
 import { escapeString } from "./internal/escapeString.js"
 
-export const uneval = (value, { functionAllowed = false, prototypeStrict = false } = {}) => {
+export const uneval = (
+  value,
+  { functionAllowed = false, prototypeStrict = false, ignoreSymbols = false } = {},
+) => {
   const { recipeArray, mainIdentifier, valueMap } = decompose(value, {
     functionAllowed,
     prototypeStrict,
+    ignoreSymbols,
   })
   const recipeArraySorted = sortRecipe(recipeArray)
 

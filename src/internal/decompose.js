@@ -6,7 +6,7 @@
 import { isComposite } from "./isComposite.js"
 import { getCompositeGlobalPath, getPrimitiveGlobalPath } from "./global-value-path.js"
 
-export const decompose = (mainValue, { functionAllowed, prototypeStrict }) => {
+export const decompose = (mainValue, { functionAllowed, prototypeStrict, ignoreSymbols }) => {
   const valueMap = {}
   const recipeArray = []
 
@@ -55,12 +55,14 @@ export const decompose = (mainValue, { functionAllowed, prototypeStrict }) => {
     })
 
     const symbolDescriptionArray = []
-    Object.getOwnPropertySymbols(value).forEach((symbol) => {
-      const propertyDescriptor = Object.getOwnPropertyDescriptor(value, symbol)
-      const symbolIdentifier = valueToIdentifier(symbol, [...path, `[${symbol.toString()}]`])
-      const propertyDescription = computePropertyDescription(propertyDescriptor, symbol, path)
-      symbolDescriptionArray.push({ symbolIdentifier, propertyDescription })
-    })
+    if (!ignoreSymbols) {
+      Object.getOwnPropertySymbols(value).forEach((symbol) => {
+        const propertyDescriptor = Object.getOwnPropertyDescriptor(value, symbol)
+        const symbolIdentifier = valueToIdentifier(symbol, [...path, `[${symbol.toString()}]`])
+        const propertyDescription = computePropertyDescription(propertyDescriptor, symbol, path)
+        symbolDescriptionArray.push({ symbolIdentifier, propertyDescription })
+      })
+    }
 
     const methodDescriptionArray = computeMethodDescriptionArray(value, path)
 
