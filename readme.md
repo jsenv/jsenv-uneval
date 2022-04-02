@@ -1,21 +1,4 @@
-# uneval
-
-Convert value into evaluable string.
-
-[![github package](https://img.shields.io/github/package-json/v/jsenv/jsenv-uneval.svg?logo=github&label=package)](https://github.com/jsenv/jsenv-uneval/packages)
-[![npm package](https://img.shields.io/npm/v/@jsenv/uneval.svg?logo=npm&label=package)](https://www.npmjs.com/package/@jsenv/uneval)
-[![github ci](https://github.com/jsenv/jsenv-uneval/workflows/ci/badge.svg)](https://github.com/jsenv/jsenv-uneval/actions?workflow=ci)
-[![codecov coverage](https://codecov.io/gh/jsenv/jsenv-uneval/branch/master/graph/badge.svg)](https://codecov.io/gh/jsenv/jsenv-uneval)
-
-# Table of contents
-
-- [Presentation](#Presentation)
-- [JSON.stringify limits](#JSONstringify-limits)
-- [Browser example](#Browser-example)
-- [Node example](#Node-example)
-- [Installation](#Installation)
-
-# Presentation
+# uneval [![npm package](https://img.shields.io/npm/v/@jsenv/uneval.svg?logo=npm&label=package)](https://www.npmjs.com/package/@jsenv/uneval)
 
 `@jsenv/uneval` turns a JavaScript value into a string that can be evaluated. It exists to overcome `JSON.stringify` limitations.
 
@@ -82,7 +65,8 @@ However `JSON.stringify` is way faster and is safe (it cannot execute arbitrary 
 - Ignores non enumerable properties
 
   ```js
-  JSON.stringify(Object.defineProperty({}, "foo", { enumerable: false })) === "{}"
+  JSON.stringify(Object.defineProperty({}, "foo", { enumerable: false })) ===
+    "{}"
   ```
 
 - Is not optimized for repetitive structure
