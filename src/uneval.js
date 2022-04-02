@@ -1,10 +1,15 @@
 import { decompose } from "./internal/decompose.js"
 import { sortRecipe } from "./internal/sortRecipe.js"
-import { escapeString } from "./internal/escapeString.js"
+import { escapeString } from "./internal/escape_string.js"
 
 export const uneval = (
   value,
-  { functionAllowed = false, prototypeStrict = false, ignoreSymbols = false } = {},
+  {
+    functionAllowed = false,
+    prototypeStrict = false,
+    ignoreSymbols = false,
+    canUseTemplateString = false,
+  } = {},
 ) => {
   const { recipeArray, mainIdentifier, valueMap } = decompose(value, {
     functionAllowed,
@@ -37,40 +42,49 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
   const identifierToVariableName = (identifier) => variableNameMap[identifier]
 
   const recipeToSetupSource = (recipe) => {
-    if (recipe.type === "primitive") return primitiveRecipeToSetupSource(recipe)
-    if (recipe.type === "global-symbol") return globalSymbolRecipeToSetupSource(recipe)
-    if (recipe.type === "global-reference") return globalReferenceRecipeToSetupSource(recipe)
+    if (recipe.type === "primitive") {
+      return primitiveRecipeToSetupSource(recipe)
+    }
+    if (recipe.type === "global-symbol") {
+      return globalSymbolRecipeToSetupSource(recipe)
+    }
+    if (recipe.type === "global-reference") {
+      return globalReferenceRecipeToSetupSource(recipe)
+    }
     return compositeRecipeToSetupSource(recipe)
   }
 
   const primitiveRecipeToSetupSource = ({ value }) => {
     const type = typeof value
-
     if (type === "string") {
-      return `"${escapeString(value)}";`
+      return escapeString(value, { canUseTemplateString })
     }
-
     if (type === "bigint") {
       return `${value.toString()}n`
     }
-
     if (Object.is(value, -0)) {
       return "-0;"
     }
-
     return `${String(value)};`
   }
 
   const globalSymbolRecipeToSetupSource = (recipe) => {
-    return `Symbol.for("${escapeString(recipe.key)}");`
+    return `Symbol.for(${escapeString(recipe.key, {
+      canUseTemplateString,
+    })});`
   }
 
   const globalReferenceRecipeToSetupSource = (recipe) => {
-    const pathSource = recipe.path.map((part) => `["${escapeString(part)}"]`).join("")
+    const pathSource = recipe.path
+      .map((part) => `[${escapeString(part, { canUseTemplateString })}]`)
+      .join("")
     return `globalObject${pathSource};`
   }
 
-  const compositeRecipeToSetupSource = ({ prototypeIdentifier, valueOfIdentifier }) => {
+  const compositeRecipeToSetupSource = ({
+    prototypeIdentifier,
+    valueOfIdentifier,
+  }) => {
     if (prototypeIdentifier === undefined) {
       return identifierToVariableName(valueOfIdentifier)
     }
@@ -93,12 +107,19 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
       return `Object(${identifierToVariableName(valueOfIdentifier)})`
     }
 
-    return `new ${prototypeConstructor.name}(${identifierToVariableName(valueOfIdentifier)});`
+    return `new ${prototypeConstructor.name}(${identifierToVariableName(
+      valueOfIdentifier,
+    )});`
   }
 
   recipeArraySorted.forEach((recipe) => {
-    const recipeVariableName = identifierToVariableName(recipeArray.indexOf(recipe))
-    source += `var ${recipeVariableName} = ${recipeToSetupSource(recipe, recipeVariableName)}
+    const recipeVariableName = identifierToVariableName(
+      recipeArray.indexOf(recipe),
+    )
+    source += `var ${recipeVariableName} = ${recipeToSetupSource(
+      recipe,
+      recipeVariableName,
+    )}
 `
   })
 
@@ -110,29 +131,42 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
   }
 
   const compositeRecipeToMutateSource = (
-    { propertyDescriptionArray, symbolDescriptionArray, methodDescriptionArray, extensible },
+    {
+      propertyDescriptionArray,
+      symbolDescriptionArray,
+      methodDescriptionArray,
+      extensible,
+    },
     recipeVariableName,
   ) => {
     let mutateSource = ``
 
-    propertyDescriptionArray.forEach(({ propertyNameIdentifier, propertyDescription }) => {
-      mutateSource += generateDefinePropertySource(
-        recipeVariableName,
-        propertyNameIdentifier,
-        propertyDescription,
-      )
-    })
+    propertyDescriptionArray.forEach(
+      ({ propertyNameIdentifier, propertyDescription }) => {
+        mutateSource += generateDefinePropertySource(
+          recipeVariableName,
+          propertyNameIdentifier,
+          propertyDescription,
+        )
+      },
+    )
 
-    symbolDescriptionArray.forEach(({ symbolIdentifier, propertyDescription }) => {
-      mutateSource += generateDefinePropertySource(
-        recipeVariableName,
-        symbolIdentifier,
-        propertyDescription,
-      )
-    })
+    symbolDescriptionArray.forEach(
+      ({ symbolIdentifier, propertyDescription }) => {
+        mutateSource += generateDefinePropertySource(
+          recipeVariableName,
+          symbolIdentifier,
+          propertyDescription,
+        )
+      },
+    )
 
     methodDescriptionArray.forEach(({ methodNameIdentifier, callArray }) => {
-      mutateSource += generateMethodCallSource(recipeVariableName, methodNameIdentifier, callArray)
+      mutateSource += generateMethodCallSource(
+        recipeVariableName,
+        methodNameIdentifier,
+        callArray,
+      )
     })
 
     if (!extensible) {
@@ -147,9 +181,12 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
     propertyNameOrSymbolIdentifier,
     propertyDescription,
   ) => {
-    const propertyOrSymbolVariableName = identifierToVariableName(propertyNameOrSymbolIdentifier)
+    const propertyOrSymbolVariableName = identifierToVariableName(
+      propertyNameOrSymbolIdentifier,
+    )
 
-    const propertyDescriptorSource = generatePropertyDescriptorSource(propertyDescription)
+    const propertyDescriptorSource =
+      generatePropertyDescriptorSource(propertyDescription)
     return `safeDefineProperty(${recipeVariableName}, ${propertyOrSymbolVariableName}, ${propertyDescriptorSource});`
   }
 
@@ -165,8 +202,16 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
       return `{
   configurable: ${configurable},
   enumerable: ${enumerable},
-  get: ${getIdentifier === undefined ? undefined : identifierToVariableName(getIdentifier)},
-  set: ${setIdentifier === undefined ? undefined : identifierToVariableName(setIdentifier)},
+  get: ${
+    getIdentifier === undefined
+      ? undefined
+      : identifierToVariableName(getIdentifier)
+  },
+  set: ${
+    setIdentifier === undefined
+      ? undefined
+      : identifierToVariableName(setIdentifier)
+  },
 }`
     }
 
@@ -174,17 +219,25 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
   configurable: ${configurable},
   writable: ${writable},
   enumerable: ${enumerable},
-  value: ${valueIdentifier === undefined ? undefined : identifierToVariableName(valueIdentifier)}
+  value: ${
+    valueIdentifier === undefined
+      ? undefined
+      : identifierToVariableName(valueIdentifier)
+  }
 }`
   }
 
-  const generateMethodCallSource = (recipeVariableName, methodNameIdentifier, callArray) => {
+  const generateMethodCallSource = (
+    recipeVariableName,
+    methodNameIdentifier,
+    callArray,
+  ) => {
     let methodCallSource = ``
 
     const methodVariableName = identifierToVariableName(methodNameIdentifier)
     callArray.forEach((argumentIdentifiers) => {
-      const argumentVariableNames = argumentIdentifiers.map((argumentIdentifier) =>
-        identifierToVariableName(argumentIdentifier),
+      const argumentVariableNames = argumentIdentifiers.map(
+        (argumentIdentifier) => identifierToVariableName(argumentIdentifier),
       )
 
       methodCallSource += `${recipeVariableName}[${methodVariableName}](${argumentVariableNames.join(
@@ -200,7 +253,9 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
   }
 
   recipeArraySorted.forEach((recipe) => {
-    const recipeVariableName = identifierToVariableName(recipeArray.indexOf(recipe))
+    const recipeVariableName = identifierToVariableName(
+      recipeArray.indexOf(recipe),
+    )
     source += `${recipeToMutateSource(recipe, recipeVariableName)}`
   })
 

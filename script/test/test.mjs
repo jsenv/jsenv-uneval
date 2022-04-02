@@ -16,17 +16,17 @@ await executeTestPlan({
         runtime: nodeRuntime,
       },
     },
-    // "test/**/*.test.html": {
-    //   chromium: {
-    //     runtime: chromiumTabRuntime,
-    //   },
-    //   firefox: {
-    //     runtime: firefoxTabRuntime,
-    //   },
-    //   webkit: {
-    //     runtime: webkitTabRuntime,
-    //   },
-    // },
+    "test/**/*.test.html": {
+      chromium: {
+        runtime: chromiumTabRuntime,
+      },
+      firefox: {
+        runtime: firefoxTabRuntime,
+      },
+      webkit: {
+        runtime: webkitTabRuntime,
+      },
+    },
   },
   completedExecutionLogMerging: true,
   coverageV8ConflictWarning: false,
