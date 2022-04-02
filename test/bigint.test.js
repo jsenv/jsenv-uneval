@@ -1,4 +1,3 @@
-/* globals BigInt */
 /* eslint-disable no-eval */
 import { assert } from "@jsenv/assert"
 import { uneval } from "@jsenv/uneval"

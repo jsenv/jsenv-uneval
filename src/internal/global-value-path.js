@@ -1,12 +1,16 @@
+/* eslint-env browser, node */
+
 import { isComposite } from "./isComposite.js"
 
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap
 const compositeWellKnownMap = new WeakMap()
 const primitiveWellKnownMap = new Map()
 
-export const getCompositeGlobalPath = (value) => compositeWellKnownMap.get(value)
+export const getCompositeGlobalPath = (value) =>
+  compositeWellKnownMap.get(value)
 
-export const getPrimitiveGlobalPath = (value) => primitiveWellKnownMap.get(value)
+export const getPrimitiveGlobalPath = (value) =>
+  primitiveWellKnownMap.get(value)
 
 const visitGlobalObject = (value) => {
   const visitValue = (value, path) => {
@@ -43,7 +47,9 @@ const visitGlobalObject = (value) => {
       }
 
       Object.getOwnPropertyNames(value).forEach((name) => visitProperty(name))
-      Object.getOwnPropertySymbols(value).forEach((symbol) => visitProperty(symbol))
+      Object.getOwnPropertySymbols(value).forEach((symbol) =>
+        visitProperty(symbol),
+      )
     }
 
     primitiveWellKnownMap.set(value, path)
