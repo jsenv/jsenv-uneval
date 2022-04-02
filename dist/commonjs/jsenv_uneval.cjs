@@ -21,6 +21,8 @@ const isComposite = value => {
   return false;
 };
 
+/* eslint-env browser, node */
+
 const compositeWellKnownMap = new WeakMap();
 const primitiveWellKnownMap = new Map();
 const getCompositeGlobalPath = value => compositeWellKnownMap.get(value);
@@ -568,20 +570,53 @@ const sortRecipe = recipeArray => {
   return recipeArrayOrdered;
 };
 
-// https://github.com/joliss/js-string-escape/blob/master/index.js
-// http://javascript.crockford.com/remedial.html
-const escapeString = value => {
-  const string = String(value);
+// https://github.com/mgenware/string-to-template-literal/blob/main/src/main.ts#L1
+const escapeTemplateString = string => {
+  string = String(string);
   let i = 0;
-  const j = string.length;
-  var escapedString = "";
+  let escapedString = "";
 
-  while (i < j) {
+  while (i < string.length) {
     const char = string[i];
+    i++;
+    escapedString += isTemplateStringSpecialChar(char) ? `\\${char}` : char;
+  }
+
+  return escapedString;
+};
+
+const isTemplateStringSpecialChar = char => templateStringSpecialChars.indexOf(char) > -1;
+
+const templateStringSpecialChars = ["\\", "`", "$"];
+
+const DOUBLE_QUOTE = `"`;
+const SINGLE_QUOTE = `'`;
+const BACKTICK = "`";
+const escapeString = (value, {
+  quote = "auto",
+  canUseTemplateString = false,
+  fallback = DOUBLE_QUOTE
+} = {}) => {
+  quote = quote === "auto" ? determineQuote(value, canUseTemplateString) || fallback : quote;
+
+  if (quote === BACKTICK) {
+    return escapeTemplateString(value);
+  } // https://github.com/jsenv/jsenv-uneval/blob/6c97ef9d8f2e9425a66f2c88347e0a118d427f3a/src/internal/escapeString.js#L3
+  // https://github.com/jsenv/jsenv-inspect/blob/bb11de3adf262b68f71ed82b0a37d4528dd42229/src/internal/string.js#L3
+  // https://github.com/joliss/js-string-escape/blob/master/index.js
+  // http://javascript.crockford.com/remedial.html
+
+
+  let escapedString = "";
+  let i = 0;
+
+  while (i < value.length) {
+    const char = value[i];
+    i++;
     let escapedChar;
 
-    if (char === '"' || char === "'" || char === "\\") {
-      escapedChar = `\\${char}`;
+    if (char === quote) {
+      escapedChar = `\\${quote}`;
     } else if (char === "\n") {
       escapedChar = "\\n";
     } else if (char === "\r") {
@@ -595,16 +630,40 @@ const escapeString = value => {
     }
 
     escapedString += escapedChar;
-    i++;
   }
 
-  return escapedString;
+  return `${quote}${escapedString}${quote}`;
+};
+
+const determineQuote = (string, canUseTemplateString) => {
+  const containsDoubleQuote = string.includes(DOUBLE_QUOTE);
+
+  if (!containsDoubleQuote) {
+    return DOUBLE_QUOTE;
+  }
+
+  const containsSimpleQuote = string.includes(SINGLE_QUOTE);
+
+  if (!containsSimpleQuote) {
+    return SINGLE_QUOTE;
+  }
+
+  if (canUseTemplateString) {
+    const containsBackTick = string.includes(BACKTICK);
+
+    if (!containsBackTick) {
+      return BACKTICK;
+    }
+  }
+
+  return null;
 };
 
 const uneval = (value, {
   functionAllowed = false,
   prototypeStrict = false,
-  ignoreSymbols = false
+  ignoreSymbols = false,
+  canUseTemplateString = false
 } = {}) => {
   const {
     recipeArray,
@@ -639,9 +698,18 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
   const identifierToVariableName = identifier => variableNameMap[identifier];
 
   const recipeToSetupSource = recipe => {
-    if (recipe.type === "primitive") return primitiveRecipeToSetupSource(recipe);
-    if (recipe.type === "global-symbol") return globalSymbolRecipeToSetupSource(recipe);
-    if (recipe.type === "global-reference") return globalReferenceRecipeToSetupSource(recipe);
+    if (recipe.type === "primitive") {
+      return primitiveRecipeToSetupSource(recipe);
+    }
+
+    if (recipe.type === "global-symbol") {
+      return globalSymbolRecipeToSetupSource(recipe);
+    }
+
+    if (recipe.type === "global-reference") {
+      return globalReferenceRecipeToSetupSource(recipe);
+    }
+
     return compositeRecipeToSetupSource(recipe);
   };
 
@@ -651,7 +719,9 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
     const type = typeof value;
 
     if (type === "string") {
-      return `"${escapeString(value)}";`;
+      return escapeString(value, {
+        canUseTemplateString
+      });
     }
 
     if (type === "bigint") {
@@ -666,11 +736,15 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
   };
 
   const globalSymbolRecipeToSetupSource = recipe => {
-    return `Symbol.for("${escapeString(recipe.key)}");`;
+    return `Symbol.for(${escapeString(recipe.key, {
+      canUseTemplateString
+    })});`;
   };
 
   const globalReferenceRecipeToSetupSource = recipe => {
-    const pathSource = recipe.path.map(part => `["${escapeString(part)}"]`).join("");
+    const pathSource = recipe.path.map(part => `[${escapeString(part, {
+      canUseTemplateString
+    })}]`).join("");
     return `globalObject${pathSource};`;
   };
 
@@ -807,4 +881,4 @@ function safeDefineProperty(object, propertyNameOrSymbol, descriptor) {
 
 exports.uneval = uneval;
 
-//# sourceMappingURL=main.cjs.map
+//# sourceMappingURL=jsenv_uneval.cjs.map

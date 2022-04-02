@@ -1,6 +1,6 @@
 {
 	"name": "@jsenv/uneval",
-	"version": "1.7.0",
+	"version": "1.7.1",
 	"description": "Convert value into evaluable string.",
 	"license": "MIT",
 	"repository": {
@@ -17,11 +17,11 @@
 	"exports": {
 		".": {
 		  "import": "./main.js",
-		  "require": "./dist/commonjs/jsenv_assert.cjs"
+		  "require": "./dist/commonjs/jsenv_uneval.cjs"
 		},
 		"./*": "./*"
 	  },
-	"main": "dist/commonjs/main.cjs",
+	"main": "dist/commonjs/jsenv_uneval.cjs",
 	"files": [
 		"/dist/",
 		"/src/",
