@@ -1,6 +1,6 @@
 {
 	"name": "@jsenv/uneval",
-	"version": "1.6.1",
+	"version": "1.7.0",
 	"description": "Convert value into evaluable string.",
 	"license": "MIT",
 	"repository": {
